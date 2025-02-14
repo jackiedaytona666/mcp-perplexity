@@ -31,19 +31,45 @@ MCP Server for the Perplexity API.
 
 ## Quickstart
 
-### Installation
+### Prerequisites
 
-#### Prerequisites
+Before using this MCP server, ensure you have:
 
-- [Python 3.10+](https://www.python.org/downloads/)
-- [uvx](https://docs.astral.sh/uv/getting-started/installation/) (recommended)
+- Python 3.10 or higher
+- [uvx](https://docs.astral.sh/uv/#installation) package manager installed
 
-#### Automated Installation
+Note: Installation instructions for uvx are available [here](https://docs.astral.sh/uv/#installation).
 
-We provide automated installation scripts that will:
-1. Install uvx if not present
-2. Download and install mcp-starter
-3. Guide you through creating the configuration file
+### Configuration for All Clients
+
+To use this MCP server, configure your client with these settings (configuration method varies by client):
+
+```json
+"mcpServers": {
+  "mcp-perplexity": {
+    "command": "uvx",
+    "args": ["mcp-perplexity"],
+    "env": {
+      "PERPLEXITY_API_KEY": "your-api-key",
+      "PERPLEXITY_MODEL": "sonar-pro",
+      "DB_PATH": "chats.db"
+    }
+  }
+}
+```
+
+**Key Configuration Notes:**
+- Replace `"your-api-key"` with your Perplexity API key
+- Environment variables can specify different models for ask/chat tools
+- `DB_PATH` sets custom chat history location (default: chats.db)
+
+### Cursor IDE Installation Helpers
+
+For Cursor users, we provide automated scripts that:
+
+1. Install uvx (Python package manager) if missing
+2. Set up the `mcp-starter` helper tool
+3. Generate appropriate Cursor command to be added to the MCP settings.
 
 <details>
 <summary><h5>Windows Installation</h5></summary>
@@ -84,55 +110,10 @@ The script will:
 - Prompt for your Perplexity API key and model preferences
 </details>
 
-#### Configure your MCP Client
-
-To use this MCP server, you need to configure your MCP client to connect to it. The configuration method will vary depending on your specific client.
-
-Below is an example configuration in JSON format:
-
-```json
-"mcpServers": {
-  "mcp-perplexity": {
-    "command": "uvx",
-    "args": [
-      "mcp-perplexity"
-    ],
-    "env": {
-      "PERPLEXITY_API_KEY": "your-perplexity-api-key",
-      "PERPLEXITY_MODEL": "sonar-pro",
-      "PERPLEXITY_MODEL_ASK": "sonar-pro",
-      "PERPLEXITY_MODEL_CHAT": "sonar-reasoning-pro",
-      "DB_PATH": "path/to/custom.db"
-    }
-  }
-}
-```
-**Important notes:**
-- Replace `"your-perplexity-api-key"` with your actual Perplexity API key
-- Environment variables configuration:
-  - `PERPLEXITY_MODEL`: Default model for both tools
-  - `PERPLEXITY_MODEL_ASK`: Overrides default model for `ask_perplexity` tool
-  - `PERPLEXITY_MODEL_CHAT`: Overrides default model for `chat_perplexity` tool
-  - `DB_PATH`: Custom path for SQLite chat history database (default: chats.db)
-- Consult the [Perplexity model docs](https://docs.perplexity.ai/guides/model-cards) for available models
-- Use the [mcp-starter](https://github.com/daniel-lxs/mcp-starter) script to easily add this MCP server to Cursor IDE.
-
-#### Using Smithery CLI
-
-Smithery is a CLI tool that allows you to easily add MCP servers to your Cursor IDE.
-
-Replace the values of the configuration object with your own values.
-
+#### Using Smithery CLI (Cursor Only)
 ```bash
-npx -y @smithery/cli@latest run @daniel-lxs/mcp-perplexity --config "{\"perplexityApiKey\":\"abc\",\"perplexityModel\":\"sonar-pro\", \"modelAsk\":\"sonar-pro\", \"modelChat\":\"sonar-reasoning-pro\", \"dbPath\":\"path/to/custom.db\"}"
+npx -y @smithery/cli@latest run @daniel-lxs/mcp-perplexity --config "{\"perplexityApiKey\":\"abc\"}"
 ```
-
-- `perplexityApiKey`: `PERPLEXITY_API_KEY`
-- `perplexityModel`: `PERPLEXITY_MODEL`
-- `modelAsk`: `PERPLEXITY_MODEL_ASK`
-- `modelChat`: `PERPLEXITY_MODEL_CHAT`
-- `dbPath`: `DB_PATH`
-
 
 ## Usage
 
@@ -158,7 +139,35 @@ Lists all available chat conversations.  It returns a paginated list of chats, s
 Retrieves the complete conversation history for a given `chat_id`.  This tool returns all messages in the chat, including timestamps and roles (user or assistant). This tool does *not* make any API calls to Perplexity; it only reads from the local database.
 
 
+## Development
 
+This project uses [Hatch](https://hatch.pypa.io/latest/) for development and builds. To get started:
+
+1. Install Hatch (if not already installed):
+   ```bash
+   pip install hatch
+   ```
+
+2. Create and activate the Hatch environment:
+   ```bash
+   hatch env create
+   hatch shell
+   ```
+
+3. Build the project:
+   ```bash
+   hatch build
+   ```
+
+The Hatch environment will automatically install all required dependencies.
+
+## Contributing
+
+This project is open to contributions. Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for more information.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 
 
