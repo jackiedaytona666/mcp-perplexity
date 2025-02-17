@@ -10,7 +10,8 @@ dependencies = [
     "haikunator>=2.1.0",
     "quart>=0.19.4",
     "sqlalchemy>=2.0.0",
-    "hypercorn>=0.15.0"
+    "hypercorn>=0.15.0",
+    "markdown2>=2.4.0"
 ]
 
 [project.urls]

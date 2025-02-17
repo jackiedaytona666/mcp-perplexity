@@ -2,6 +2,7 @@ import os
 import logging
 from pathlib import Path
 from quart import Quart
+from markdown2 import markdown
 from ..database import DatabaseManager
 from .database_extension import db
 
@@ -43,6 +44,10 @@ def create_app():
         # Configure template and static directories
         app.template_folder = str(Path(__file__).parent / 'templates')
         app.static_folder = str(Path(__file__).parent / 'static')
+
+        # Add markdown filter
+        app.jinja_env.filters['markdown'] = lambda text: markdown(
+            text, extras=['fenced-code-blocks', 'tables'])
 
         # Initialize database extension
         db.init_app(app)

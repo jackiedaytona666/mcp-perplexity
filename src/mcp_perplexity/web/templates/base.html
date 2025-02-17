@@ -131,6 +131,7 @@
     
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -155,6 +156,23 @@
                                 yellow: 'var(--tokyo-accent-yellow)',
                                 purple: 'var(--tokyo-accent-purple)',
                                 orange: 'var(--tokyo-accent-orange)'
+                            }
+                        }
+                    },
+                    typography: {
+                        DEFAULT: {
+                            css: {
+                                maxWidth: 'none',
+                                color: 'var(--tokyo-text-default)',
+                                h1: { color: 'var(--tokyo-text-default)' },
+                                h2: { color: 'var(--tokyo-text-default)' },
+                                h3: { color: 'var(--tokyo-text-default)' },
+                                h4: { color: 'var(--tokyo-text-default)' },
+                                p: { color: 'var(--tokyo-text-default)' },
+                                a: { color: 'var(--tokyo-accent-blue)' },
+                                code: { color: 'var(--tokyo-accent-orange)' },
+                                'pre code': { color: 'var(--tokyo-text-default)' },
+                                'pre': { backgroundColor: 'var(--tokyo-bg-accent)' }
                             }
                         }
                     }

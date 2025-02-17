@@ -14,7 +14,9 @@
                 {% endif %}
             </div>
             <div class="ml-3 flex-1">
-                <p class="text-sm dark:text-tokyo-text whitespace-pre-wrap">{{ message['content'] }}</p>
+                <div class="text-sm dark:text-tokyo-text prose dark:prose-invert max-w-none">
+                    {{ message['content'] | markdown | safe }}
+                </div>
                 <div class="mt-1 text-xs dark:text-tokyo-text-secondary">
                     {{ message['timestamp'].strftime('%H:%M:%S') }}
                 </div>
@@ -23,7 +25,7 @@
     </div>
     {% endfor %}
 {% else %}
-    <div class="text-center text-sm dark:text-tokyo-text-secondary">
+    <div class="text-center text-sm dark:text-tokyo-text-secondary ">
         No messages in this chat
     </div>
 {% endif %} 
