@@ -4,18 +4,18 @@
         <div class="flex items-start">
             <div class="flex-shrink-0">
                 {% if message['role'] == 'assistant' %}
-                <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <span class="text-indigo-600 font-medium">AI</span>
+                <div class="h-8 w-8 rounded-full dark:bg-tokyo-bg-accent flex items-center justify-center">
+                    <span class="dark:text-tokyo-accent-blue font-medium">AI</span>
                 </div>
                 {% else %}
-                <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
-                    <span class="text-gray-600 font-medium">U</span>
+                <div class="h-8 w-8 rounded-full dark:bg-tokyo-bg-message flex items-center justify-center">
+                    <span class="dark:text-tokyo-accent-green font-medium">U</span>
                 </div>
                 {% endif %}
             </div>
             <div class="ml-3 flex-1">
-                <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ message['content'] }}</p>
-                <div class="mt-1 text-xs text-gray-500">
+                <p class="text-sm dark:text-tokyo-text whitespace-pre-wrap">{{ message['content'] }}</p>
+                <div class="mt-1 text-xs dark:text-tokyo-text-secondary">
                     {{ message['timestamp'].strftime('%H:%M:%S') }}
                 </div>
             </div>
@@ -23,7 +23,7 @@
     </div>
     {% endfor %}
 {% else %}
-    <div class="text-center text-sm text-gray-500">
+    <div class="text-center text-sm dark:text-tokyo-text-secondary">
         No messages in this chat
     </div>
 {% endif %} 

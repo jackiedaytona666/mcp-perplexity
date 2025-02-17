@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,11 +8,31 @@
     <!-- HTMX for dynamic updates -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     
-    <!-- Tailwind CSS for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Custom styles -->
+    <!-- Custom styles with CSS variables -->
     <style>
+        :root {
+            /* Tokyo Night Dark Theme Variables */
+            --tokyo-bg-default: #16161e;
+            --tokyo-bg-secondary: #1a1b26;
+            --tokyo-bg-accent: #24283b;
+            --tokyo-bg-message: #2f334d;
+            
+            --tokyo-text-default: #cfc9c2;
+            --tokyo-text-secondary: #787c99;
+            
+            --tokyo-accent-blue: #7dcfff;
+            --tokyo-accent-green: #9ece6a;
+            --tokyo-accent-red: #f7768e;
+            --tokyo-accent-yellow: #e0af68;
+            --tokyo-accent-purple: #bb9af7;
+            --tokyo-accent-orange: #ff9e64;
+        }
+
+        body {
+            background-color: var(--tokyo-bg-default);
+            color: var(--tokyo-text-default);
+        }
+
         .chat-container {
             max-height: calc(100vh - 200px);
             overflow-y: auto;
@@ -25,13 +45,15 @@
         }
         
         .message.assistant {
-            background-color: #f3f4f6;
+            background-color: var(--tokyo-bg-message);
             margin-right: 20%;
+            color: var(--tokyo-text-default);
         }
         
         .message.user {
-            background-color: #dbeafe;
+            background-color: var(--tokyo-bg-accent);
             margin-left: 20%;
+            color: var(--tokyo-text-default);
         }
         
         /* Scrollbar styling */
@@ -40,26 +62,74 @@
         }
         
         .chat-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: var(--tokyo-bg-secondary);
         }
         
         .chat-container::-webkit-scrollbar-thumb {
-            background: #888;
+            background: var(--tokyo-text-secondary);
             border-radius: 4px;
         }
         
         .chat-container::-webkit-scrollbar-thumb:hover {
-            background: #555;
+            background: var(--tokyo-accent-blue);
+        }
+
+        /* Navigation and footer styling */
+        nav, footer {
+            background-color: var(--tokyo-bg-secondary);
+            color: var(--tokyo-text-default);
+        }
+
+        a {
+            color: var(--tokyo-accent-blue);
+        }
+
+        a:hover {
+            color: var(--tokyo-accent-green);
         }
     </style>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        tokyo: {
+                            bg: {
+                                DEFAULT: 'var(--tokyo-bg-default)',
+                                secondary: 'var(--tokyo-bg-secondary)',
+                                accent: 'var(--tokyo-bg-accent)',
+                                message: 'var(--tokyo-bg-message)'
+                            },
+                            text: {
+                                DEFAULT: 'var(--tokyo-text-default)',
+                                secondary: 'var(--tokyo-text-secondary)'
+                            },
+                            accent: {
+                                blue: 'var(--tokyo-accent-blue)',
+                                green: 'var(--tokyo-accent-green)',
+                                red: 'var(--tokyo-accent-red)',
+                                yellow: 'var(--tokyo-accent-yellow)',
+                                purple: 'var(--tokyo-accent-purple)',
+                                orange: 'var(--tokyo-accent-orange)'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <nav class="bg-white shadow-sm">
+<body class="min-h-screen dark:bg-tokyo-bg dark:text-tokyo-text">
+    <nav class="shadow-sm dark:bg-tokyo-bg-secondary">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
-                        <a href="/" class="text-xl font-bold text-gray-800">
+                        <a href="/" class="text-xl font-bold dark:text-tokyo-text">
                             MCP Perplexity
                         </a>
                     </div>
@@ -72,10 +142,10 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-white border-t mt-8">
+    <footer class="border-t mt-8 dark:bg-tokyo-bg-secondary dark:border-tokyo-bg-accent">
         <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-            <p class="text-center text-gray-500 text-sm">
-                MCP Perplexity Chat Interface
+            <p class="text-center text-sm dark:text-tokyo-text-secondary">
+              <a href="https://github.com/daniel-lxs" class="text-tokyo-accent-blue">Made with ❤️</a>
             </p>
         </div>
     </footer>

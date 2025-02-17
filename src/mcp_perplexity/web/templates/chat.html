@@ -3,22 +3,22 @@
 {% block title %}{{ chat['title'] or 'Untitled Chat' }} - MCP Perplexity{% endblock %}
 
 {% block content %}
-<div class="bg-white shadow sm:rounded-lg">
+<div class="dark:bg-tokyo-bg-secondary shadow sm:rounded-lg">
     <div class="px-4 py-5 sm:px-6">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-lg leading-6 font-medium text-gray-900">
+                <h2 class="text-lg leading-6 font-medium dark:text-tokyo-accent-blue">
                     {{ chat['title'] or 'Untitled Chat' }}
                 </h2>
-                <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                <p class="mt-1 max-w-2xl text-sm dark:text-tokyo-text">
                     Created {{ chat['created_at'].strftime('%Y-%m-%d %H:%M:%S') }}
                 </p>
             </div>
             <div class="flex items-center">
-                <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
+                <span class="inline-flex items-center rounded-full dark:bg-tokyo-bg-accent px-2.5 py-0.5 text-xs font-medium dark:text-tokyo-text">
                     ID: {{ chat['id'] }}
                 </span>
-                <button class="copy-chat-id ml-1 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-500 rounded-md"
+                <button class="copy-chat-id ml-1 dark:text-tokyo-text-secondary hover:text-tokyo-accent-blue focus:outline-none focus:ring-1 focus:ring-tokyo-accent-blue rounded-md transition-colors duration-150"
                         data-chat-id="{{ chat['id'] }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -26,17 +26,16 @@
                         <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
                     </svg>
                 </button>
-                <span class="copied-text ml-2 text-green-500 text-xs hidden">Copied!</span>
+                <span class="copied-text ml-2 text-tokyo-accent-green text-xs hidden">Copied!</span>
 
-                <a href="/" class="ml-4 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                <a href="/" class="ml-4 inline-flex items-center px-4 py-2 border dark:border-tokyo-bg-accent shadow-sm text-sm font-medium rounded-md dark:text-tokyo-text dark:bg-tokyo-bg-accent hover:bg-tokyo-bg-message transition-colors duration-150">
                     Back to Chats
                 </a>
             </div>
-
         </div>
     </div>
     
-    <div class="border-t border-gray-200">
+    <div class="border-t dark:border-tokyo-bg-accent">
         <div class="chat-container px-4 py-5 sm:px-6" 
              hx-get="/api/chat/{{ chat['id'] }}/messages" 
              hx-trigger="every 5s"
@@ -71,43 +70,39 @@
         lastMessageCount = currentMessageCount;
     });
 
-    // Copy chat ID functionality (duplicated from _chat_list.html, but with specific targetting)
+    // Copy chat ID functionality
     document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.copy-chat-id').forEach(button => { // selects ALL copy buttons
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
+        document.querySelectorAll('.copy-chat-id').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
 
-            const chatId = this.getAttribute('data-chat-id');
-            navigator.clipboard.writeText(chatId).then(() => {
-                // Visual feedback: Show "Copied!" text
-                // Find the NEXT sibling with class 'copied-text'
-                let sibling = this.nextElementSibling;
-                while (sibling && !sibling.classList.contains('copied-text')) {
-                    sibling = sibling.nextElementSibling;
-                }
-                if (sibling) {
-                    sibling.classList.remove('hidden');
+                const chatId = this.getAttribute('data-chat-id');
+                navigator.clipboard.writeText(chatId).then(() => {
+                    // Visual feedback: Show "Copied!" text
+                    let sibling = this.nextElementSibling;
+                    while (sibling && !sibling.classList.contains('copied-text')) {
+                        sibling = sibling.nextElementSibling;
+                    }
+                    if (sibling) {
+                        sibling.classList.remove('hidden');
+                        setTimeout(() => {
+                            sibling.classList.add('hidden');
+                        }, 1500);
+                    }
+
+                    // Visual feedback - temporarily change the icon color
+                    const svg = this.querySelector('svg');
+                    svg.className.baseVal = 'h-4 w-4 text-tokyo-accent-green';
                     setTimeout(() => {
-                        sibling.classList.add('hidden');
-                    }, 1500); // Hide after 1.5 seconds
-                }
+                        svg.className.baseVal = 'h-4 w-4';
+                    }, 1000);
 
-                // Visual feedback - temporarily change the icon color to green
-                const svg = this.querySelector('svg');
-                const originalColor = svg.classList.contains('text-green-500') ? 'text-gray-400' : svg.className.baseVal;
-
-                svg.className.baseVal = 'h-4 w-4 text-green-500';
-                setTimeout(() => {
-                    svg.className.baseVal = originalColor;
-                }, 1000);
-
-            }).catch(err => {
-                console.error('Failed to copy:', err);
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                });
             });
         });
     });
-});
-
 </script>
 {% endblock %} 
