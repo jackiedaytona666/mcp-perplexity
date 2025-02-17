@@ -60,64 +60,23 @@ To use this MCP server, configure your client with these settings (configuration
 }
 ```
 
-**Key Configuration Notes:**
-- Replace `"your-api-key"` with your Perplexity API key
-- Environment variables can specify different models for ask/chat tools
-- `DB_PATH` sets custom chat history location (default: chats.db)
+## Environment Variables
 
-### Cursor IDE Installation Helpers
+Configure the MCP Perplexity server using the following environment variables:
 
-For Cursor users, we provide automated scripts that:
+| Variable | Description | Default Value | Required |
+|----------|-------------|---------------|----------|
+| `PERPLEXITY_API_KEY` | Your Perplexity API key | None | Yes |
+| `PERPLEXITY_MODEL` | Default model for interactions | `sonar-pro` | No |
+| `PERPLEXITY_MODEL_ASK` | Specific model for `ask_perplexity` tool | Uses `PERPLEXITY_MODEL` | No |
+| `PERPLEXITY_MODEL_CHAT` | Specific model for `chat_perplexity` tool | Uses `PERPLEXITY_MODEL` | No |
+| `DB_PATH` | Path to store chat history database | `chats.db` | No |
+| `MCP_WEB_ENABLED` | Enable or disable web UI | `false` | No |
+| `MCP_WEB_PORT` | Port for web UI | `8050` | No |
+| `MCP_WEB_HOST` | Host for web UI | `127.0.0.1` | No |
+| `DEBUG_LOGS` | Enable detailed logging | `false` | No |
 
-1. Install uvx (Python package manager) if missing
-2. Set up the `mcp-starter` helper tool
-3. Generate appropriate Cursor command to be added to the MCP settings.
-
-<details>
-<summary><h5>Windows Installation</h5></summary>
-
-1. Download the `install.ps1` script
-2. Open PowerShell as Administrator
-3. Allow script execution and run:
-```powershell
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-.\install.ps1
-```
-
-The script will:
-- Check for required dependencies (curl, PowerShell)
-- Install uvx if not present
-- Install mcp-starter to `%USERPROFILE%\.local\bin`
-- Create a configuration file at `%USERPROFILE%\.config\mcp-starter\config.json`
-- Prompt for your Perplexity API key and model preferences
-</details>
-
-<details>
-<summary><h5>Unix Installation (Linux/MacOS)</h5></summary>
-
-1. Download the `install.sh` script
-2. Open Terminal
-3. Navigate to the directory containing the script
-4. Make the script executable and run it:
-```bash
-chmod +x install.sh  # Only needed if downloaded directly from browser
-./install.sh
-```
-
-The script will:
-- Check for required dependencies (curl)
-- Install uvx if not present
-- Install mcp-starter to `$HOME/.local/bin`
-- Create a configuration file at `$HOME/.config/mcp-starter/config.json`
-- Prompt for your Perplexity API key and model preferences
-</details>
-
-#### Using Smithery CLI (Cursor Only)
-```bash
-npx -y @smithery/cli@latest run @daniel-lxs/mcp-perplexity --config "{\"perplexityApiKey\":\"abc\"}"
-```
-
-## Usage
+## Available Tools
 
 ### ask_perplexity
 
@@ -140,6 +99,28 @@ Lists all available chat conversations.  It returns a paginated list of chats, s
 ### read_chat_perplexity
 Retrieves the complete conversation history for a given `chat_id`.  This tool returns all messages in the chat, including timestamps and roles (user or assistant). This tool does *not* make any API calls to Perplexity; it only reads from the local database.
 
+## Web UI
+
+The MCP Perplexity server now includes a web interface for easier interaction and management of chats.
+
+### Features
+- Interactive chat interface
+- Chat history management
+- Real-time message display
+
+### Screenshots
+
+#### Chat List View
+![Chat List Screenshot](path/to/chat_list_screenshot.png)
+
+#### Chat Interface
+![Chat Interface Screenshot](path/to/chat_interface_screenshot.png)
+
+### Accessing the Web UI
+
+When `MCP_WEB_ENABLED` is set to `true`, the web UI will be available at `http://MCP_WEB_HOST:MCP_WEB_PORT`. 
+
+By default, this is `http://127.0.0.1:8050`.
 
 ## Development
 
