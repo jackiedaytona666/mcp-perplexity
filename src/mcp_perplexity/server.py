@@ -22,7 +22,7 @@ PERPLEXITY_API_BASE_URL = "https://api.perplexity.ai"
 
 haikunator = Haikunator()
 DB_PATH = os.getenv("DB_PATH", "chats.db")
-SYSTEM_PROMPT = """You are an expert assistant providing accurate answers to technical questions. 
+SYSTEM_PROMPT = """You are an expert assistant providing accurate answers to technical questions.
 Your responses must:
 1. Be based on the most relevant web sources
 2. Include source citations for all factual claims
@@ -192,8 +192,8 @@ def get_chat_history(chat_id):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
-    c.execute('''SELECT role, content FROM messages 
-                 WHERE chat_id = ? 
+    c.execute('''SELECT role, content FROM messages
+                 WHERE chat_id = ?
                  ORDER BY timestamp''', (chat_id,))
     history = [{"role": row[0], "content": row[1]} for row in c.fetchall()]
     conn.close()
@@ -337,6 +337,7 @@ async def handle_call_tool(
                 citation_list = "\n".join(
                     f"{i}. {url}" for i, url in enumerate(unique_citations, start=1))
 
+                # Format the response text for display
                 response_text = (
                     f"{full_response}\n\n"
                     f"Sources:\n{citation_list}\n\n"
@@ -350,7 +351,7 @@ async def handle_call_tool(
                     await context.session.send_progress_notification(
                         progress_token=progress_token,
                         progress=progress_counter,
-                        total=progress_counter,  # Set final total to actual tokens received
+                        total=progress_counter  # Set final total to actual tokens received
                     )
 
                 return [
@@ -462,8 +463,14 @@ async def handle_call_tool(
                 citation_list = "\n".join(
                     f"{i}. {url}" for i, url in enumerate(unique_citations, start=1))
 
+                # Format full response with sources for storage
+                response_with_sources = (
+                    f"{full_response}\n\n"
+                    f"Sources:\n{citation_list}"
+                )
+
                 # Store assistant response
-                store_message(chat_id, "assistant", full_response)
+                store_message(chat_id, "assistant", response_with_sources)
 
                 # Format chat history
                 history_text = "\nChat History:\n"
