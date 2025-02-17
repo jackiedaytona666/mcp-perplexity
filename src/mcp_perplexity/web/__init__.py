@@ -7,16 +7,21 @@ from .database_extension import db
 
 # Setup logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
-# Ensure logs directory exists
-os.makedirs('logs', exist_ok=True)
+# Only enable logging if DEBUG_LOGS is set to true
+if os.getenv('DEBUG_LOGS', 'false').lower() == 'true':
+    logger.setLevel(logging.INFO)
 
-# File handler for web operations
-web_handler = logging.FileHandler('logs/web.log')
-web_handler.setFormatter(logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-logger.addHandler(web_handler)
+    # Ensure logs directory exists
+    os.makedirs('logs', exist_ok=True)
+
+    # File handler for web operations
+    web_handler = logging.FileHandler('logs/web.log')
+    web_handler.setFormatter(logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    logger.addHandler(web_handler)
+else:
+    logger.setLevel(logging.CRITICAL)  # Effectively disable logging
 
 # Disable propagation to prevent stdout logging
 logger.propagate = False

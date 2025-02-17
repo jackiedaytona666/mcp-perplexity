@@ -67,10 +67,23 @@ async def run_server(args: Optional[list] = None):
 def main(args: Optional[list] = None):
     """Main entry point for the package."""
     try:
-        # Disable all root logging to prevent any stdout logging
-        logging.getLogger().handlers = []
-        # Set root logger level to CRITICAL to minimize any accidental logging
-        logging.getLogger().setLevel(logging.CRITICAL)
+        # Configure logging based on DEBUG_LOGS environment variable
+        if os.getenv('DEBUG_LOGS', 'false').lower() != 'true':
+            # Disable all root logging to prevent any stdout logging
+            logging.getLogger().handlers = []
+            # Set root logger level to CRITICAL to minimize any accidental logging
+            logging.getLogger().setLevel(logging.CRITICAL)
+        else:
+            # Ensure logs directory exists
+            os.makedirs('logs', exist_ok=True)
+            # Configure root logger for debug mode
+            root_logger = logging.getLogger()
+            root_logger.setLevel(logging.INFO)
+            # Add file handler for general logs
+            handler = logging.FileHandler('logs/app.log')
+            handler.setFormatter(logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+            root_logger.addHandler(handler)
 
         asyncio.run(run_server(args))
     except KeyboardInterrupt:

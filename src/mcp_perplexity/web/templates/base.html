@@ -3,10 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}MCP Perplexity Chat{% endblock %}</title>
+    <title>{% block title %}MCP Perplexity{% endblock %}</title>
     
     <!-- HTMX for dynamic updates -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        function confirmDeleteChat(chatId) {
+            window.dialog.confirm({
+                title: 'Delete Chat',
+                message: 'Are you sure you want to delete this chat? This action cannot be undone.',
+                onConfirm: () => {
+                    fetch(`/api/chat/${chatId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to delete chat');
+                        }
+                        // Remove the chat element from the DOM
+                        const chatElement = document.getElementById(`chat-${chatId}`);
+                        if (chatElement) {
+                            chatElement.remove();
+                        } else {
+                            // If we're on the chat page, redirect to home
+                            window.location.href = '/';
+                        }
+                    })
+                    .catch(error => {
+                        window.dialog.error({
+                            title: 'Error',
+                            message: 'An error occurred while deleting the chat.'
+                        });
+                    });
+                }
+            });
+        }
+    </script>
     
     <!-- Custom styles with CSS variables -->
     <style>
@@ -123,7 +160,7 @@
         }
     </script>
 </head>
-<body class="min-h-screen dark:bg-tokyo-bg dark:text-tokyo-text">
+<body class="dark:bg-tokyo-bg min-h-screen">
     <nav class="shadow-sm dark:bg-tokyo-bg-secondary">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
@@ -149,5 +186,7 @@
             </p>
         </div>
     </footer>
+
+    {% include '_dialog.html' %}
 </body>
 </html> 

@@ -1,10 +1,16 @@
 import logging
+import os
 from quart import render_template, jsonify, request
 from .database_extension import db
 
 # Setup logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+
+# Only enable logging if DEBUG_LOGS is set to true
+if os.getenv('DEBUG_LOGS', 'false').lower() == 'true':
+    logger.setLevel(logging.INFO)
+else:
+    logger.setLevel(logging.CRITICAL)  # Effectively disable logging
 
 
 def register_routes(app):
@@ -69,3 +75,12 @@ def register_routes(app):
         except Exception as e:
             logger.error(f"Error in api_chat_messages route: {e}")
             return jsonify({'error': 'Failed to load messages'}), 500
+
+    @app.route('/api/chat/<chat_id>', methods=['DELETE'])
+    async def delete_chat(chat_id):
+        try:
+            db.delete_chat(chat_id)
+            return '', 204
+        except Exception as e:
+            logger.error(f"Error deleting chat: {e}")
+            return jsonify({'error': 'Failed to delete chat'}), 500

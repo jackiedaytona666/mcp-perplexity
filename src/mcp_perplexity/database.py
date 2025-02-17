@@ -2,24 +2,29 @@ import os
 from datetime import datetime
 from contextlib import contextmanager
 import logging
-from typing import Optional, List
+from typing import Optional, List, TypeVar, Type, Callable
 
 from sqlalchemy import create_engine, Column, String, DateTime, ForeignKey
-from sqlalchemy.orm import sessionmaker, declarative_base, relationship
+from sqlalchemy.orm import sessionmaker, declarative_base, relationship, Session
 from sqlalchemy.pool import QueuePool
 
 # Setup logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
-# Ensure logs directory exists
-os.makedirs('logs', exist_ok=True)
+# Only enable logging if DEBUG_LOGS is set to true
+if os.getenv('DEBUG_LOGS', 'false').lower() == 'true':
+    logger.setLevel(logging.INFO)
 
-# File handler for database operations
-db_handler = logging.FileHandler('logs/database.log')
-db_handler.setFormatter(logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-logger.addHandler(db_handler)
+    # Ensure logs directory exists
+    os.makedirs('logs', exist_ok=True)
+
+    # File handler for database operations
+    db_handler = logging.FileHandler('logs/database.log')
+    db_handler.setFormatter(logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    logger.addHandler(db_handler)
+else:
+    logger.setLevel(logging.CRITICAL)  # Effectively disable logging
 
 # Disable propagation to prevent stdout logging
 logger.propagate = False
@@ -52,6 +57,35 @@ class Message(Base):
     chat = relationship("Chat", back_populates="messages")
 
 
+T = TypeVar('T')
+
+
+class SessionManager:
+    """A proper context manager for database sessions."""
+
+    def __init__(self, session_factory: sessionmaker[Session]):
+        self.session_factory = session_factory
+        self.session: Optional[Session] = None
+
+    def __enter__(self) -> Session:
+        self.session = self.session_factory()
+        return self.session
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.session is None:
+            return
+
+        try:
+            if exc_type is None:
+                self.session.commit()
+            else:
+                self.session.rollback()
+                logger.error(f"Database session error: {exc_val}")
+        finally:
+            self.session.close()
+            self.session = None
+
+
 class DatabaseManager:
     def __init__(self, db_path: Optional[str] = None):
         if db_path is None:
@@ -77,18 +111,9 @@ class DatabaseManager:
             logger.error(f"Error creating database tables: {e}")
             raise
 
-    @contextmanager
     def get_session(self):
-        session = self.SessionLocal()
-        try:
-            yield session
-            session.commit()
-        except Exception as e:
-            session.rollback()
-            logger.error(f"Database session error: {e}")
-            raise
-        finally:
-            session.close()
+        """Get a database session context manager."""
+        return SessionManager(self.SessionLocal)
 
     def get_all_chats(self) -> List[Chat]:
         with self.get_session() as session:
@@ -118,3 +143,11 @@ class DatabaseManager:
                 logger.error(
                     f"Error fetching messages for chat {chat_id}: {e}")
                 raise
+
+    def delete_chat(self, chat_id: str) -> None:
+        """Delete a chat and all its messages."""
+        with self.get_session() as session:
+            chat = session.query(Chat).filter(Chat.id == chat_id).first()
+            if chat:
+                session.delete(chat)
+                session.commit()

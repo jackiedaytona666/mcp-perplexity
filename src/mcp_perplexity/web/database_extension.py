@@ -89,6 +89,14 @@ class Database:
                 'timestamp': msg.timestamp
             } for msg in messages]
 
+    def delete_chat(self, chat_id: str) -> None:
+        """Delete a chat and all its messages."""
+        with self.database_manager.get_session() as session:
+            chat = session.query(Chat).filter(Chat.id == chat_id).first()
+            if chat:
+                session.delete(chat)
+                session.commit()
+
 
 # Create the extension instance
 db = Database()
