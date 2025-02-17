@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="dark h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -68,6 +68,9 @@
         body {
             background-color: var(--tokyo-bg-default);
             color: var(--tokyo-text-default);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .chat-container {
@@ -162,7 +165,7 @@
 </head>
 <body class="dark:bg-tokyo-bg min-h-screen">
     <nav class="shadow-sm dark:bg-tokyo-bg-secondary">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
@@ -175,11 +178,11 @@
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow">
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="border-t mt-8 dark:bg-tokyo-bg-secondary dark:border-tokyo-bg-accent">
+    <footer class="border-t dark:bg-tokyo-bg-secondary dark:border-tokyo-bg-accent mt-auto">
         <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
             <p class="text-center text-sm dark:text-tokyo-text-secondary">
               <a href="https://github.com/daniel-lxs" class="text-tokyo-accent-blue">Made with ❤️</a>
@@ -189,4 +192,4 @@
 
     {% include '_dialog.html' %}
 </body>
-</html> 
+</html>
