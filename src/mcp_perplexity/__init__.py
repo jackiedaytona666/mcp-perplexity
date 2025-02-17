@@ -7,7 +7,7 @@ from typing import Optional
 from .server import main as server_main
 from .web import create_app, WEB_ENABLED, WEB_PORT, WEB_HOST
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 
 async def run_web_ui():
