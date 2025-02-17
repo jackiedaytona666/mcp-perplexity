@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}{{ chat['title'] or 'Untitled Chat' }} - MCP Perplexity{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow sm:rounded-lg">
+    <div class="px-4 py-5 sm:px-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-lg leading-6 font-medium text-gray-900">
+                    {{ chat['title'] or 'Untitled Chat' }}
+                </h2>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                    Created {{ chat['created_at'].strftime('%Y-%m-%d %H:%M:%S') }}
+                </p>
+            </div>
+            <div class="flex items-center">
+                <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
+                    ID: {{ chat['id'] }}
+                </span>
+                <button class="copy-chat-id ml-1 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-500 rounded-md"
+                        data-chat-id="{{ chat['id'] }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
+                        <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                    </svg>
+                </button>
+                <span class="copied-text ml-2 text-green-500 text-xs hidden">Copied!</span>
+
+                <a href="/" class="ml-4 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Back to Chats
+                </a>
+            </div>
+
+        </div>
+    </div>
+    
+    <div class="border-t border-gray-200">
+        <div class="chat-container px-4 py-5 sm:px-6" 
+             hx-get="/api/chat/{{ chat['id'] }}/messages" 
+             hx-trigger="every 5s"
+             hx-target="this" 
+             hx-swap="innerHTML"
+             hx-preserve="true">
+            {% include '_message_list.html' %}
+        </div>
+    </div>
+</div>
+
+<script>
+    let lastMessageCount = document.querySelectorAll('.message').length;
+    
+    // Scroll to bottom only on initial load
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.querySelector('.chat-container');
+        container.scrollTop = container.scrollHeight;
+    });
+    
+    // On HTMX content update
+    document.body.addEventListener('htmx:afterSwap', (event) => {
+        const container = event.detail.target;
+        const currentMessageCount = container.querySelectorAll('.message').length;
+        
+        // Only scroll if new messages were added and user is near bottom
+        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+        if (currentMessageCount > lastMessageCount && isNearBottom) {
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        lastMessageCount = currentMessageCount;
+    });
+
+    // Copy chat ID functionality (duplicated from _chat_list.html, but with specific targetting)
+    document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.copy-chat-id').forEach(button => { // selects ALL copy buttons
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const chatId = this.getAttribute('data-chat-id');
+            navigator.clipboard.writeText(chatId).then(() => {
+                // Visual feedback: Show "Copied!" text
+                // Find the NEXT sibling with class 'copied-text'
+                let sibling = this.nextElementSibling;
+                while (sibling && !sibling.classList.contains('copied-text')) {
+                    sibling = sibling.nextElementSibling;
+                }
+                if (sibling) {
+                    sibling.classList.remove('hidden');
+                    setTimeout(() => {
+                        sibling.classList.add('hidden');
+                    }, 1500); // Hide after 1.5 seconds
+                }
+
+                // Visual feedback - temporarily change the icon color to green
+                const svg = this.querySelector('svg');
+                const originalColor = svg.classList.contains('text-green-500') ? 'text-gray-400' : svg.className.baseVal;
+
+                svg.className.baseVal = 'h-4 w-4 text-green-500';
+                setTimeout(() => {
+                    svg.className.baseVal = originalColor;
+                }, 1000);
+
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        });
+    });
+});
+
+</script>
+{% endblock %} 
