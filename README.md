@@ -111,10 +111,10 @@ The MCP Perplexity server now includes a web interface for easier interaction an
 ### Screenshots
 
 #### Chat List View
-![Chat List Screenshot](path/to/chat_list_screenshot.png)
+![image](https://github.com/user-attachments/assets/a8aebd19-f58a-4d6c-988e-ea1c1ca7f174)
 
 #### Chat Interface
-![Chat Interface Screenshot](path/to/chat_interface_screenshot.png)
+![image](https://github.com/user-attachments/assets/627bfcdb-2214-47e6-a55e-3987737ad00f)
 
 ### Accessing the Web UI
 
