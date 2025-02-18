@@ -109,6 +109,9 @@ async def handle_list_tools() -> list[types.Tool]:
                 Creates new chats or continues existing ones with full history context.
                 This tool only has access to the context you have provided. It cannot read any file unless you provide it with the file content.
                 Returns chat ID for future continuation.
+
+                For new chats: Provide 'message' and 'title'
+                For existing chats: Provide 'chat_id' and 'message'
                 """),
             inputSchema={
                 "type": "object",
@@ -119,14 +122,14 @@ async def handle_list_tools() -> list[types.Tool]:
                     },
                     "chat_id": {
                         "type": "string",
-                        "description": "Existing chat ID to continue (optional)"
+                        "description": "ID of an existing chat to continue. If not provided, a new chat will be created and title is required."
                     },
                     "title": {
                         "type": "string",
-                        "description": "Title of the chat"
+                        "description": "Title for the new chat. Required when creating a new chat (when chat_id is not provided)."
                     }
                 },
-                "required": ["title", "message"]
+                "required": ["message"]
             },
         ),
         types.Tool(
@@ -375,7 +378,10 @@ async def handle_call_tool(
         title = arguments.get("title")
 
         # Store user message
-        store_message(chat_id, "user", user_message, title)
+        if not arguments.get("chat_id"):  # Only store title for new chats
+            store_message(chat_id, "user", user_message, title or "Untitled")
+        else:
+            store_message(chat_id, "user", user_message)
 
         # Get full chat history
         chat_history = get_chat_history(chat_id)
