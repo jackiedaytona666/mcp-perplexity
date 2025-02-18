@@ -46,7 +46,7 @@ changelog_sections = [
     { type = "test", section = "Testing", hidden = true },
     { type = "build", section = "Build System", hidden = true },
     { type = "style", section = "Code Style", hidden = true },
-    { type = "chore", section = "Maintenance", hidden = true },
+    { type = "chore", section = "Maintenance", hidden = false },
     { type = "ci", section = "CI/CD", hidden = true }
 ]
 commit_parser = "angular"
