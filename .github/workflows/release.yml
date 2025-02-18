@@ -30,18 +30,11 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install hatch python-semantic-release
 
-    - name: Add Hatch to PATH
-      run: echo "$HOME/.local/bin" >> $GITHUB_PATH
-
     - name: Python Semantic Release
       id: release
       uses: python-semantic-release/python-semantic-release@v8.7.0
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Build project
-      if: steps.release.outputs.released == 'true'
-      run: hatch build
 
     - name: Store the distribution packages
       if: steps.release.outputs.released == 'true'
