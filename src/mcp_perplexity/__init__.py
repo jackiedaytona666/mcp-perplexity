@@ -3,16 +3,36 @@ import os
 import sys
 import logging
 from typing import Optional
+import socket
 
 from .server import main as server_main
 from .web import create_app, WEB_ENABLED, WEB_PORT, WEB_HOST
 
 __version__ = "0.5.0"
 
+web_ui_running = False
+
+
+async def is_port_in_use(host: str, port: int) -> bool:
+    """Checks if a port is in use."""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(1)  # Short timeout to avoid hanging
+            s.bind((host, port))
+            return False  # Port is free
+    except OSError:
+        return True  # Port is in use
+
 
 async def run_web_ui():
+    global web_ui_running
+    if web_ui_running:
+        print("Web UI is already running. Skipping.")
+        return
+
     app = create_app()
     if app:
+        web_ui_running = True
         try:
             from hypercorn.asyncio import serve
             from hypercorn.config import Config
@@ -46,6 +66,8 @@ async def run_web_ui():
             if os.getenv('DEBUG_LOGS', 'false').lower() == 'true':
                 with open('logs/web_error.log', 'a') as f:
                     f.write(f"Failed to start web UI: {e}\n")
+        finally:
+            web_ui_running = False
 
 
 async def run_server(args: Optional[list] = None):
