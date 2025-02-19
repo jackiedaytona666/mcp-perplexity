@@ -1,6 +1,6 @@
 # Perplexity MCP Server
 
-The Perplexity MCP Server provides a Python-based interface to the Perplexity API, offering tools for querying responses, maintaining chat history, and managing conversations. It supports model configuration via environment variables and stores chat data locally. Built with Hatch, it's designed for integration with development environments.
+The Perplexity MCP Server provides a Python-based interface to the Perplexity API, offering tools for querying responses, maintaining chat history, and managing conversations. It supports model configuration via environment variables and stores chat data locally. Built with Python and setuptools, it's designed for integration with development environments.
 
 The MCP Server is desined to mimick how users interact with the Perplexity Chat on their browser by allowing your models to ask questions, continue conversations, and list all your chats.
 
@@ -124,25 +124,27 @@ By default, this is `http://127.0.0.1:8050`.
 
 ## Development
 
-This project uses [Hatch](https://hatch.pypa.io/latest/) for development and builds. To get started:
+This project uses setuptools for development and builds. To get started:
 
-1. Install Hatch (if not already installed):
+1. Create a virtual environment:
    ```bash
-   pip install hatch
+   python -m venv .venv
+   source .venv/bin/activate  # On Linux/macOS
+   # or
+   .venv\Scripts\activate  # On Windows
    ```
 
-2. Create and activate the Hatch environment:
+2. Install the project in editable mode with all dependencies:
    ```bash
-   hatch env create
-   hatch shell
+   pip install -e .
    ```
 
 3. Build the project:
    ```bash
-   hatch build
+   python -m build
    ```
 
-The Hatch environment will automatically install all required dependencies.
+The virtual environment will contain all required dependencies for development.
 
 ## Contributing
 

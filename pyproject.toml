@@ -22,23 +22,19 @@ Repository = "https://github.com/daniel-lxs/mcp-perplexity"
 name = "Daniel Riccio"
 email = "ricciodaniel98@gmail.com"
 
-[build-system]
-requires = [ "hatchling",]
-build-backend = "hatchling.build"
-
 [project.scripts]
 mcp-perplexity = "mcp_perplexity:main"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/mcp_perplexity"]
-sources = ["src"]
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.semantic_release]
 version_variable = ["__init__.py:__version__"]
 branch = "main"
 upload_to_pypi = false
 upload_to_release = true
-build_command = "hatch build"
+build_command = "python -m build"
 changelog_components = "default"
 changelog_sections = [
     { type = "feat", section = "What's New", hidden = false },
