@@ -5,9 +5,9 @@ from typing import AsyncGenerator, Dict, List, Optional, Tuple
 import httpx
 
 PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
-PERPLEXITY_MODEL = os.getenv("PERPLEXITY_MODEL")
-PERPLEXITY_MODEL_ASK = os.getenv("PERPLEXITY_MODEL_ASK")
-PERPLEXITY_MODEL_CHAT = os.getenv("PERPLEXITY_MODEL_CHAT")
+PERPLEXITY_MODEL = os.getenv("PERPLEXITY_MODEL") or "sonar-pro"
+PERPLEXITY_MODEL_ASK = os.getenv("PERPLEXITY_MODEL_ASK") or PERPLEXITY_MODEL
+PERPLEXITY_MODEL_CHAT = os.getenv("PERPLEXITY_MODEL_CHAT") or PERPLEXITY_MODEL
 PERPLEXITY_API_BASE_URL = "https://api.perplexity.ai"
 
 SYSTEM_PROMPT = """You are an expert assistant providing accurate answers to technical questions.
@@ -16,6 +16,32 @@ Your responses must:
 2. Include source citations for all factual claims
 3. If no relevant results are found, suggest 2-3 alternative search queries that might better uncover the needed information
 4. Prioritize technical accuracy, especially for programming-related questions"""
+
+TIMEOUT = 60.0
+
+# Define model profiles with validation ranges
+MODEL_PROFILES = {
+    "sonar": {
+        "temperature": 0.2,
+        "top_p": 0.9,
+        "convert_system_to_user": False,
+    },
+    "sonar-pro": {
+        "temperature": 0.2,
+        "top_p": 0.9,
+        "convert_system_to_user": False,
+    },
+    "sonar-reasoning": {
+        "temperature": 0.6,
+        "top_p": 0.95,
+        "convert_system_to_user": True,
+    },
+    "sonar-reasoning-pro": {
+        "temperature": 0.6,
+        "top_p": 0.95,
+        "convert_system_to_user": True,
+    },
+}
 
 
 class PerplexityClient:
@@ -40,6 +66,31 @@ class PerplexityClient:
         Yields:
             Tuple of (content_chunk, citations, usage_stats)
         """
+        model = model or PERPLEXITY_MODEL
+        profile = MODEL_PROFILES.get(model, {})
+        request_body = {
+            "model": model,
+            "messages": messages,
+            "stream": True,
+        }
+
+        if profile:
+            # Handle system messages consistently
+            if profile.get("convert_system_to_user", False):
+                new_messages = []
+                for message in messages:
+                    if message["role"] == "system":
+                        new_messages.append(
+                            {"role": "user", "content": message["content"]})
+                    else:
+                        new_messages.append(message)
+                request_body["messages"] = new_messages
+
+            # Apply validated profile settings
+            for setting in ["temperature", "top_p"]:
+                if setting in profile:
+                    request_body[setting] = profile[setting]
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{self.base_url}/chat/completions",
@@ -47,12 +98,8 @@ class PerplexityClient:
                     "Authorization": f"Bearer {self.api_key}",
                     "Content-Type": "application/json",
                 },
-                json={
-                    "model": model or PERPLEXITY_MODEL,
-                    "messages": messages,
-                    "stream": True
-                },
-                timeout=30.0,
+                json=request_body,
+                timeout=TIMEOUT,
             )
             response.raise_for_status()
 
@@ -97,7 +144,7 @@ class PerplexityClient:
 
         async for content, citations, usage in self._stream_completion(
             messages,
-            model=PERPLEXITY_MODEL_ASK or PERPLEXITY_MODEL,
+            model=PERPLEXITY_MODEL_ASK,
         ):
             yield content, citations, usage
 
@@ -119,6 +166,6 @@ class PerplexityClient:
 
         async for content, citations, usage in self._stream_completion(
             full_messages,
-            model=PERPLEXITY_MODEL_CHAT or PERPLEXITY_MODEL,
+            model=PERPLEXITY_MODEL_CHAT,
         ):
             yield content, citations, usage
