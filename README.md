@@ -4,7 +4,7 @@ The Perplexity MCP Server provides a Python-based interface to the Perplexity AP
 
 The MCP Server is desined to mimick how users interact with the Perplexity Chat on their browser by allowing your models to ask questions, continue conversations, and list all your chats.
 
-[![smithery badge](https://smithery.ai/badge/@daniel-lxs/mcp-perplexity)](https://smithery.ai/server/@daniel-lxs/mcp-perplexity) [![PyPI Publish](https://github.com/daniel-lxs/mcp-perplexity/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/daniel-lxs/mcp-perplexity/actions/workflows/pypi-publish.yml)
+[![smithery badge](https://smithery.ai/badge/@daniel-lxs/mcp-perplexity)](https://smithery.ai/server/@daniel-lxs/mcp-perplexity) [![Release and Publish](https://github.com/daniel-lxs/mcp-perplexity/actions/workflows/release.yml/badge.svg)](https://github.com/daniel-lxs/mcp-perplexity/actions/workflows/release.yml)
 
 
 
