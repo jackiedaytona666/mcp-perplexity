@@ -114,7 +114,7 @@ The script will:
 
 #### Using Smithery CLI (Cursor Only)
 ```bash
-npx -y @smithery/cli@latest run @daniel-lxs/mcp-perplexity --config "{\"perplexityApiKey\":\"abc\"}"
+npx -y @smithery/cli@latest run @daniel-lxs/mcp-perplexity --config "{\"perplexityApiKey\":\"pplx-abc\",\"perplexityModel\":\"sonar-pro\"}"
 ```
 
 ## Usage
