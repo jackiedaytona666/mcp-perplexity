@@ -1,4 +1,4 @@
-# Perplexity MCP Server
+# Perplexity Chat MCP Server
 
 The Perplexity MCP Server provides a Python-based interface to the Perplexity API, offering tools for querying responses, maintaining chat history, and managing conversations. It supports model configuration via environment variables and stores chat data locally. Built with Hatch, it's designed for integration with development environments.
 
