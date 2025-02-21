@@ -290,7 +290,7 @@ async def handle_call_tool(
                         ],
                         "stream": True
                     },
-                    timeout=30.0,
+                    timeout=60.0,
                 )
                 response.raise_for_status()
 
@@ -418,7 +418,7 @@ async def handle_call_tool(
                         ],
                         "stream": True
                     },
-                    timeout=30.0,
+                    timeout=60.0,
                 )
                 response.raise_for_status()
 
