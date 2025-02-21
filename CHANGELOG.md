@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v0.4.2 (2025-02-21)
+
+### Bug Fixes
+
+- Increase API call timeout to 60 seconds
+  ([`1df2a42`](https://github.com/daniel-lxs/mcp-perplexity/commit/1df2a42ba22336992201e293c7bc88c78ec4044a))
+
+Extend timeout duration to allow for longer-running API requests in the server module Bump version
+
+### Documentation
+
+- Fix missing model on smithery command (ty @cartjacked)
+  ([`abed600`](https://github.com/daniel-lxs/mcp-perplexity/commit/abed600a68f11b2348b1e186a8a0cf76430ed1e3))
+
+- Update badge
+  ([`ae5b456`](https://github.com/daniel-lxs/mcp-perplexity/commit/ae5b4564e21d38e3e14370f56acb1eb2aa63f843))
+
+- Update name
+  ([`d5c3f68`](https://github.com/daniel-lxs/mcp-perplexity/commit/d5c3f68b131177e621872d2b53961f14c0e7fe9d))
+
+
 ## v0.4.1 (2025-02-18)
 
 ### Bug Fixes
