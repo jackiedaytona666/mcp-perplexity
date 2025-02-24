@@ -30,6 +30,9 @@ mcp-perplexity = "mcp_perplexity:main"
 requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project.optional-dependencies]
+dev = ["pyinstaller>=6.3.0"]
+
 [tool.semantic_release]
 version_variable = ["__init__.py:__version__"]
 branch = "main"
