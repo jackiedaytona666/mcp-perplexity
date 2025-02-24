@@ -1,10 +1,10 @@
-# Perplexity MCP Server
+# Perplexity Chat MCP Server
 
 The Perplexity MCP Server provides a Python-based interface to the Perplexity API, offering tools for querying responses, maintaining chat history, and managing conversations. It supports model configuration via environment variables and stores chat data locally. Built with Python and setuptools, it's designed for integration with development environments.
 
 The MCP Server is desined to mimick how users interact with the Perplexity Chat on their browser by allowing your models to ask questions, continue conversations, and list all your chats.
 
-[![smithery badge](https://smithery.ai/badge/@daniel-lxs/mcp-perplexity)](https://smithery.ai/server/@daniel-lxs/mcp-perplexity) [![PyPI Publish](https://github.com/daniel-lxs/mcp-perplexity/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/daniel-lxs/mcp-perplexity/actions/workflows/pypi-publish.yml)
+[![smithery badge](https://smithery.ai/badge/@daniel-lxs/mcp-perplexity)](https://smithery.ai/server/@daniel-lxs/mcp-perplexity) [![Release and Publish](https://github.com/daniel-lxs/mcp-perplexity/actions/workflows/release.yml/badge.svg)](https://github.com/daniel-lxs/mcp-perplexity/actions/workflows/release.yml)
 
 
 
@@ -76,7 +76,12 @@ Configure the MCP Perplexity server using the following environment variables:
 | `WEB_UI_HOST` | Host for web UI | `127.0.0.1` | No |
 | `DEBUG_LOGS` | Enable detailed logging | `false` | No |
 
-## Available Tools
+#### Using Smithery CLI
+```bash
+npx -y @smithery/cli@latest run @daniel-lxs/mcp-perplexity --config "{\"perplexityApiKey\":\"pplx-abc\",\"perplexityModel\":\"sonar-pro\"}"
+```
+
+## Usage
 
 ### ask_perplexity
 

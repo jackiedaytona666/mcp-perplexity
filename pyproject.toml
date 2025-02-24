@@ -34,7 +34,7 @@ build-backend = "setuptools.build_meta"
 dev = ["pyinstaller>=6.3.0"]
 
 [tool.semantic_release]
-version_variable = ["__init__.py:__version__"]
+version_variable = ["src/mcp_perplexity/__init__.py:__version__"]
 branch = "main"
 upload_to_pypi = false
 upload_to_release = true
@@ -50,7 +50,7 @@ changelog_sections = [
     { type = "test", section = "Testing", hidden = true },
     { type = "build", section = "Build System", hidden = true },
     { type = "style", section = "Code Style", hidden = true },
-    { type = "chore", section = "Maintenance", hidden = true },
+    { type = "chore", section = "Maintenance", hidden = false },
     { type = "ci", section = "CI/CD", hidden = true }
 ]
 commit_parser = "angular"

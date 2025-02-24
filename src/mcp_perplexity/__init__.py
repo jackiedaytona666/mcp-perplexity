@@ -117,7 +117,6 @@ def main(args: Optional[list] = None):
     except KeyboardInterrupt:
         pass
 
-
 if __name__ == "__main__":
     main()
 

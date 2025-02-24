@@ -1,4 +1,4 @@
-name: Semantic Release
+name: Release and Publish
 
 on:
   push:
@@ -21,7 +21,6 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        
     - name: Python Semantic Release
       id: release
       uses: python-semantic-release/python-semantic-release@v9.20.0
@@ -102,7 +101,6 @@ jobs:
           dist/${{ matrix.platform }}/*
           dist/${{ matrix.platform }}.sha256
         retention-days: 5
-        
   pypi-publish:
     needs: semantic-release
     runs-on: ubuntu-latest
