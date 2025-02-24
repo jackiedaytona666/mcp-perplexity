@@ -39,23 +39,19 @@ branch = "main"
 upload_to_pypi = false
 upload_to_release = true
 build_command = "python -m build"
-commit_parser = "conventional"
+commit_parser = "angular"
 major_on_zero = false
 tag_format = "v{version}"
+# Explicitly disable templates
+templates_dir = ""
 
-# Updated changelog configuration
+# Changelog configuration with proper section titles
 [tool.semantic_release.changelog]
-template_dir = "templates"
-exclude_commit_patterns = []
-
-[tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
+# Disable template for changelog
+template = ""
 
-[tool.semantic_release.changelog.environment]
-trim_blocks = true
-lstrip_blocks = true
-
-# Define sections with proper visibility
+# Define sections for changelog
 [[tool.semantic_release.changelog.sections]]
 type = "feat"
 section = "Features"
@@ -105,15 +101,3 @@ hidden = false
 type = "chore"
 section = "Maintenance"
 hidden = false
-
-# Add release notes configuration
-[tool.semantic_release.remote]
-token = "GH_TOKEN"
-type = "github"
-
-[tool.semantic_release.publish]
-dist_glob_patterns = ["dist/*.tar.gz", "dist/*.whl"]
-
-[tool.semantic_release.templates]
-changelog_template = "changelog.md.j2"
-release_notes_template = "release_notes.md.j2"
