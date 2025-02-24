@@ -36,38 +36,77 @@
     </div>
     
     <div class="border-t dark:border-tokyo-bg-accent">
-        <div class="chat-container px-4 py-3 sm:px-6" 
-             hx-get="/api/chat/{{ chat['id'] }}/messages" 
-             hx-trigger="every 5s"
-             hx-target="this" 
-             hx-swap="innerHTML"
-             hx-preserve="true">
+        <!-- Container for messages - No longer has direct HTMX update attributes -->
+        <div class="chat-container px-4 py-3 sm:px-6">
             {% include '_message_list.html' %}
         </div>
     </div>
 </div>
 
+<!-- Hidden div that acts as a data fetcher and updates messages only if there are changes -->
+<div id="message-updater" 
+     hx-get="/api/chat/{{ chat['id'] }}/messages" 
+     hx-trigger="every 5s"
+     hx-target="#message-updater" 
+     hx-swap="innerHTML"
+     class="hidden">
+</div>
+
 <script>
     let lastMessageCount = document.querySelectorAll('.message').length;
+    let messageData = null;
     
     // Scroll to bottom only on initial load
     document.addEventListener('DOMContentLoaded', () => {
         const container = document.querySelector('.chat-container');
         container.scrollTop = container.scrollHeight;
+        
+        // Initialize the message data on load
+        messageData = Array.from(document.querySelectorAll('.message')).map(el => el.id);
     });
     
-    // On HTMX content update
+    // On HTMX content update to the hidden updater
     document.body.addEventListener('htmx:afterSwap', (event) => {
-        const container = event.detail.target;
-        const currentMessageCount = container.querySelectorAll('.message').length;
+        if (event.detail.target.id !== 'message-updater') return;
         
-        // Only scroll if new messages were added and user is near bottom
-        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
-        if (currentMessageCount > lastMessageCount && isNearBottom) {
-            container.scrollTop = container.scrollHeight;
+        // Parse the new data and compare with current state
+        const updatedMessages = Array.from(event.detail.target.querySelectorAll('.message'));
+        const updatedMessageIds = updatedMessages.map(el => el.id);
+        
+        // Only update if there are actual changes in the messages
+        if (JSON.stringify(updatedMessageIds) !== JSON.stringify(messageData)) {
+            // Save scroll position and details state
+            const container = document.querySelector('.chat-container');
+            const scrollPosition = container.scrollTop;
+            const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+            
+            // Save states of any open details elements
+            const openDetailsState = {};
+            document.querySelectorAll('.chat-container details').forEach(detail => {
+                openDetailsState[detail.querySelector('summary').textContent.trim()] = detail.open;
+            });
+            
+            // Update the messages container with new content
+            document.querySelector('.chat-container').innerHTML = event.detail.target.innerHTML;
+            
+            // Restore open state of details elements
+            document.querySelectorAll('.chat-container details').forEach(detail => {
+                const summary = detail.querySelector('summary').textContent.trim();
+                if (openDetailsState[summary]) {
+                    detail.open = true;
+                }
+            });
+            
+            // Update our tracked message data
+            messageData = updatedMessageIds;
+            
+            // Restore scroll position or scroll to bottom for new messages
+            if (isNearBottom) {
+                container.scrollTop = container.scrollHeight;
+            } else {
+                container.scrollTop = scrollPosition;
+            }
         }
-        
-        lastMessageCount = currentMessageCount;
     });
 
     // Copy chat ID functionality

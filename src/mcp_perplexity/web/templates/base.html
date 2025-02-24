@@ -215,6 +215,15 @@
                   color: 'var(--tokyo-text-secondary)',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
+                  '& p': {
+                    display: 'block',
+                    color: 'inherit',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word'
+                  },
+                  '& *': {
+                    color: 'inherit'
+                  },
                   '&:hover': {
                     color: 'var(--tokyo-text-default)',
                     borderLeftColor: 'var(--tokyo-accent-green)'
@@ -226,12 +235,14 @@
                   '& > summary': {
                     outline: 'none',
                     fontWeight: '500',
-                    marginBottom: '0.5rem'
+                    marginBottom: '0.5rem',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    display: 'list-item'
                   },
                   '& > summary::marker': {
                     color: 'var(--tokyo-accent-blue)'
                   }
-
                 }
               }
             }
