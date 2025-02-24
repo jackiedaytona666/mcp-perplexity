@@ -2,6 +2,116 @@
 
 
 
+## v0.5.0 (2025-02-24)
+
+### Chore
+
+* chore: remove old installers ([`e3689d0`](https://github.com/daniel-lxs/mcp-perplexity/commit/e3689d0549bbb2ee311793cf362721b901119749))
+
+* chore: Increase default timeout for Perplexity API client
+
+- Extend default timeout from 60 to 120 seconds to accommodate longer-running queries
+- Improve API request resilience by allowing more time for complex responses ([`724aae0`](https://github.com/daniel-lxs/mcp-perplexity/commit/724aae0f936b449a37a21e4abed0aea71c953380))
+
+* chore: Add PyInstaller spec and development dependencies ([`854132b`](https://github.com/daniel-lxs/mcp-perplexity/commit/854132bcfb31280e764571202d9b18007d9af778))
+
+### Ci
+
+* ci: Update semantic release configuration and templates ([`a9a5c3c`](https://github.com/daniel-lxs/mcp-perplexity/commit/a9a5c3ce4e57ddc870919047feffd3635512c91b))
+
+* ci: Remove debug step from semantic release workflow ([`e28cc72`](https://github.com/daniel-lxs/mcp-perplexity/commit/e28cc723af6c8b44b325a9ef5e31371ecb415aeb))
+
+* ci: Enhance semantic release and build configuration
+
+- Update semantic release configuration with explicit changelog sections
+- Refactor release workflow to improve build and publishing process
+- Add custom changelog and release notes templates
+- Update PyInstaller spec and build configuration
+- Improve cross-platform build matrix for binaries ([`f2fff6d`](https://github.com/daniel-lxs/mcp-perplexity/commit/f2fff6d3f842eca785adcce410a29d604e248038))
+
+* ci: Refactor release workflow with improved semantic release and publishing ([`fb80404`](https://github.com/daniel-lxs/mcp-perplexity/commit/fb8040418c3757f996c15db5ce64e7c9e30144a2))
+
+* ci: Add Python setup and dependencies to release workflow
+
+- Set up Python 3.10 in release workflow
+- Install build dependencies for Python package
+- Prepare environment for semantic release process ([`1ef0095`](https://github.com/daniel-lxs/mcp-perplexity/commit/1ef0095ea79f090d5856fb7079242fafcc80e9fa))
+
+### Feature
+
+* feat: Enhance markdown processing with interactive &lt;think&gt; block rendering
+
+- Implement custom markdown filter to preserve and transform &lt;think&gt; tags
+- Add collapsible details element for thought process blocks
+- Improve message update mechanism with intelligent content comparison
+- Update base template styling for better details and summary rendering ([`a9d05fd`](https://github.com/daniel-lxs/mcp-perplexity/commit/a9d05fdebabd9d5f7117777b65badbcc66805fab))
+
+* feat: Improve web application resource path handling and logging ([`35be31b`](https://github.com/daniel-lxs/mcp-perplexity/commit/35be31b11323a8858720dc8d71e879f37ddc76e0))
+
+### Fix
+
+* fix: Improve macOS checksum generation in release workflow ([`8723563`](https://github.com/daniel-lxs/mcp-perplexity/commit/8723563d657f7a091eac33a4c02e47a350da01e3))
+
+* fix: ci builds ubuntu and macos ([`53c51ea`](https://github.com/daniel-lxs/mcp-perplexity/commit/53c51eac37679ff7cea406c880da378625b94dd0))
+
+* fix: simplify ci ([`4b45d24`](https://github.com/daniel-lxs/mcp-perplexity/commit/4b45d2449f59c90848d50a99a933d139fa38f056))
+
+* fix: Preserve citation order and duplicates in Perplexity client
+
+- Update citation handling to maintain original order and duplicates
+- Replace `list(dict.fromkeys())` with direct citation list in perplexity_client.py and server.py
+- Ensure consistent citation rendering across response generation ([`4e292fc`](https://github.com/daniel-lxs/mcp-perplexity/commit/4e292fcd28f6fbe265401abe699b8a388db4f17c))
+
+### Refactor
+
+* refactor: Update web UI environment variables and configuration
+
+- Rename web-related environment variables from `MCP_*` to `WEB_UI_*`
+- Update README documentation to reflect new environment variable names
+- Modify web module to use new environment variable names consistently
+- Maintain default values and functionality of web UI configuration ([`410d0b9`](https://github.com/daniel-lxs/mcp-perplexity/commit/410d0b981ed5b5563d5bc878722384e902296d50))
+
+* refactor: Improve message rendering and typography in web templates
+
+- Enhance message list template with better text wrapping and overflow handling
+- Add Tailwind CSS classes for improved responsiveness and readability
+- Update base template with more robust typography and code block styling
+- Optimize message container width and break-word behavior ([`abe031c`](https://github.com/daniel-lxs/mcp-perplexity/commit/abe031c2654689e1c51f43483c5991739e4700dc))
+
+* refactor: Streamline release workflow and build process
+
+- Update release workflow to use latest semantic-release version
+- Add multi-platform binary builds with PyInstaller
+- Implement automated artifact generation and checksum verification
+- Remove separate PyPI publish workflow in favor of integrated process
+- Enhance release asset upload and GitHub release management ([`4fd2ca8`](https://github.com/daniel-lxs/mcp-perplexity/commit/4fd2ca86a9b37b5bbeaf1ee1644513d9f6f72d77))
+
+* refactor: Optimize web UI styling and layout
+
+- Reduce message margins for better space utilization
+- Improve code and pre-block styling with enhanced readability
+- Add scrollable overflow for code blocks and messages
+- Adjust typography and spacing in headers, navigation, and footer
+- Implement subtle hover and interaction styles for code and think blocks ([`8b2fcae`](https://github.com/daniel-lxs/mcp-perplexity/commit/8b2fcae212c574a5676539c26aa118202e5d5f32))
+
+### Style
+
+* style: Enhance interactive &lt;think&gt; block styling and rendering
+
+- Add detailed CSS styling for &lt;think&gt; details and summary elements
+- Wrap processed content in a dedicated div for better styling control
+- Implement hover and open state transitions for think blocks
+- Add subtle animations and color variations for improved user experience ([`dd2ccfa`](https://github.com/daniel-lxs/mcp-perplexity/commit/dd2ccfa484f955f86783c734195080a106c16509))
+
+### Unknown
+
+* Merge pull request #8 from daniel-lxs/chats_webui
+
+Interactive Chats Web UI and other improvements ([`704b1ba`](https://github.com/daniel-lxs/mcp-perplexity/commit/704b1bacbd06e4e76a0767cbe8ed1109ad4d8811))
+
+* Merge branch &#39;main&#39; into chats_webui ([`09fa9a8`](https://github.com/daniel-lxs/mcp-perplexity/commit/09fa9a8f741d4f0c9788fb3655920a38c64ec188))
+
+
 ## v0.4.2 (2025-02-21)
 
 ### Chore
