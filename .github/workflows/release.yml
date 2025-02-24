@@ -43,8 +43,10 @@ jobs:
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "action@github.com"
-        semantic-release version
-        semantic-release publish
+        # Debug step to check commit parsing
+        semantic-release --verbose changelog
+        semantic-release --verbose version
+        semantic-release --verbose publish
 
     - name: Store the distribution packages
       uses: actions/upload-artifact@v4

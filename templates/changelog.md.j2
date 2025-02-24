@@ -1,15 +1,17 @@
 # CHANGELOG
 
-{% for version in changelog %}
-## {{ version.version }} ({{ version.date }})
+{% for release in releases %}
+## {{ release.version }} ({{ release.date }})
 
-{% for section in version.sections %}
-### {{ section.name }}
+{% for section_name, section_commits in release.sections.items() %}
+{% if section_commits %}
+### {{ section_name }}
 
-{% for commit in section.commits %}
+{% for commit in section_commits %}
 - {{ commit.message }}
   {% if commit.sha %}([`{{ commit.sha }}`]({{ commit.url }})){% endif %}
 
 {% endfor %}
+{% endif %}
 {% endfor %}
 {% endfor %} 
