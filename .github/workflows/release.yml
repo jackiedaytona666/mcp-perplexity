@@ -11,68 +11,146 @@ permissions:
   id-token: write
 
 jobs:
-  release:
+  semantic-release:
     runs-on: ubuntu-latest
     outputs:
-      released: ${{ steps.release.outputs.released }}
-      version: ${{ steps.release.outputs.version }}
+      released: ${{ steps.release.outputs.new_release_published }}
+      version: ${{ steps.release.outputs.new_release_version }}
     concurrency: release
-
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+    - name: Python Semantic Release
+      id: release
+      uses: python-semantic-release/python-semantic-release@v9.20.0
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        git_committer_name: "github-actions"
+        git_committer_email: "actions@users.noreply.github.com"
 
+  build:
+    needs: semantic-release
+    if: needs.semantic-release.outputs.released == 'true'
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            artifact_name: mcp-perplexity-linux-x86_64
+            pyinstaller_flags: --strip --clean --noconfirm
+          - os: windows-latest
+            platform: windows
+            artifact_name: mcp-perplexity-windows-x86_64.exe
+            pyinstaller_flags: --clean --noconfirm
+          - os: macos-latest
+            platform: macos
+            artifact_name: mcp-perplexity-macos-x86_64
+            pyinstaller_flags: --clean --noconfirm --target-arch universal2
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+    
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: "3.x"
-
+        python-version: '3.10'
+        architecture: x64
+    
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install build python-semantic-release
-
-    - name: Build package
-      run: python -m build
-
-    - name: Python Semantic Release
-      id: release
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        pip install pyinstaller
+        pip install -e .
+        
+    - name: Install UPX (Windows)
+      if: matrix.platform == 'windows'
+      shell: pwsh
       run: |
-        git config --global user.name "github-actions"
-        git config --global user.email "action@github.com"
-        semantic-release version
-        semantic-release publish
+        $UPX_VERSION="4.2.1"
+        Invoke-WebRequest "https://github.com/upx/upx/releases/download/v$UPX_VERSION/upx-$UPX_VERSION-win64.zip" -OutFile upx.zip
+        Expand-Archive upx.zip -DestinationPath $env:GITHUB_WORKSPACE/upx
+        echo "UPX_DIR=$env:GITHUB_WORKSPACE/upx/upx-$UPX_VERSION-win64" >> $env:GITHUB_ENV
 
-    - name: Store the distribution packages
+    - name: Build executable
+      run: |
+        EXTRA_FLAGS=""
+        if [ "${{ matrix.platform }}" = "windows" ]; then
+          EXTRA_FLAGS="--upx-dir ${{ env.UPX_DIR }}"
+        fi
+        
+        pyinstaller --onefile \
+          --name ${{ matrix.artifact_name }} \
+          --distpath dist/${{ matrix.platform }} \
+          ${{ matrix.pyinstaller_flags }} \
+          $EXTRA_FLAGS \
+          mcp_perplexity/cli.py
+      shell: bash
+
+    - name: Generate checksums
+      run: |
+        cd dist/${{ matrix.platform }}
+        sha256sum * > ../${{ matrix.platform }}.sha256
+      shell: bash
+        
+    - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: python-package-distributions
-        path: dist/
+        name: binaries-${{ matrix.platform }}
+        path: |
+          dist/${{ matrix.platform }}/*
+          dist/${{ matrix.platform }}.sha256
         retention-days: 5
-        if-no-files-found: error
-
-  publish:
-    needs: release
-    if: needs.release.outputs.released == 'true'
+  pypi-publish:
+    needs: semantic-release
     runs-on: ubuntu-latest
+    if: needs.semantic-release.outputs.released == 'true'
+    permissions:
+      id-token: write
     environment:
       name: pypi
       url: https://pypi.org/p/mcp-perplexity
-    permissions:
-      id-token: write
-
     steps:
-    - name: Download built distributions
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        
+    - name: Build package
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install build
+        python -m build
+        
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+
+  release-assets:
+    needs: [semantic-release, build, pypi-publish]
+    runs-on: ubuntu-latest
+    if: needs.semantic-release.outputs.released == 'true'
+    permissions:
+      contents: write
+    steps:
+    - name: Download all artifacts
       uses: actions/download-artifact@v4
       with:
-        name: python-package-distributions
-        path: dist/
-
-    - name: Publish package distributions to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
+        pattern: 'binaries-*'
+        merge-multiple: true
+        path: artifacts
+    
+    - name: Verify checksums
+      run: |
+        cd artifacts
+        for sumfile in *.sha256; do
+          sha256sum -c "$sumfile" || exit 1
+        done
+        
+    - name: Upload to GitHub Release
+      uses: softprops/action-gh-release@v2
       with:
-        packages-dir: dist/
-        verbose: true
+        files: |
+          artifacts/binaries-*/mcp-perplexity-*
+          artifacts/*.sha256
+        tag_name: v${{ needs.semantic-release.outputs.version }} 

@@ -3,26 +3,22 @@ from textwrap import dedent
 import json
 from collections import deque
 from datetime import datetime
+import uuid
+from typing import List, Dict, Optional
+import sqlite3
 
-
-import httpx
 import mcp.server.stdio
 import mcp.types as types
 from mcp.server import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
 from haikunator import Haikunator
-import sqlite3
-import uuid
 
-PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
-PERPLEXITY_MODEL = os.getenv("PERPLEXITY_MODEL")
-PERPLEXITY_MODEL_ASK = os.getenv("PERPLEXITY_MODEL_ASK")
-PERPLEXITY_MODEL_CHAT = os.getenv("PERPLEXITY_MODEL_CHAT")
-PERPLEXITY_API_BASE_URL = "https://api.perplexity.ai"
+from .perplexity_client import PerplexityClient
+from .database import DatabaseManager, Chat, Message
 
 haikunator = Haikunator()
 DB_PATH = os.getenv("DB_PATH", "chats.db")
-SYSTEM_PROMPT = """You are an expert assistant providing accurate answers to technical questions. 
+SYSTEM_PROMPT = """You are an expert assistant providing accurate answers to technical questions.
 Your responses must:
 1. Be based on the most relevant web sources
 2. Include source citations for all factual claims
@@ -30,6 +26,8 @@ Your responses must:
 4. Prioritize technical accuracy, especially for programming-related questions"""
 
 server = Server("mcp-server-perplexity")
+perplexity_client = PerplexityClient()
+db_manager = DatabaseManager(DB_PATH)
 
 
 def init_db():
@@ -175,50 +173,43 @@ def generate_chat_id():
     return haikunator.haikunate(token_length=2, delimiter='-').lower()
 
 
-def store_message(chat_id, role, content, title=None):
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
+def store_message(chat_id: str, role: str, content: str, title: Optional[str] = None) -> None:
+    with db_manager.get_session() as session:
+        # Create chat if it doesn't exist
+        chat = session.query(Chat).filter(Chat.id == chat_id).first()
+        if not chat:
+            chat = Chat(id=chat_id, title=title)
+            session.add(chat)
+            session.flush()  # Ensure chat is created before adding message
 
-    # Create chat if it doesn't exist
-    c.execute("INSERT OR IGNORE INTO chats (id, title) VALUES (?, ?)",
-              (chat_id, title))
-
-    # Store message
-    c.execute("INSERT INTO messages (id, chat_id, role, content) VALUES (?, ?, ?, ?)",
-              (str(uuid.uuid4()), chat_id, role, content))
-
-    conn.commit()
-    conn.close()
-
-
-def get_chat_history(chat_id):
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-
-    c.execute('''SELECT role, content FROM messages 
-                 WHERE chat_id = ? 
-                 ORDER BY timestamp''', (chat_id,))
-    history = [{"role": row[0], "content": row[1]} for row in c.fetchall()]
-    conn.close()
-    return history
+        # Create and store message
+        message = Message(
+            id=str(uuid.uuid4()),
+            chat_id=chat_id,
+            role=role,
+            content=content
+        )
+        session.add(message)
 
 
-def get_relative_time(timestamp_str):
+def get_chat_history(chat_id: str) -> List[Dict[str, str]]:
+    messages = db_manager.get_chat_messages(chat_id)
+    return [{"role": msg.role.scalar(), "content": msg.content.scalar()} for msg in messages]
+
+
+def get_relative_time(timestamp: datetime) -> str:
     try:
-        # Parse the timestamp string to datetime object - timestamps are stored in UTC
-        utc_dt = datetime.strptime(
-            timestamp_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=None)
         # Get current time in UTC for comparison
         now_utc = datetime.utcnow()
 
         # Calculate the time difference
-        diff = now_utc - utc_dt
+        diff = now_utc - timestamp
         seconds = diff.total_seconds()
 
         # For future dates or dates too far in the future/past, show the actual date
         if abs(seconds) > 31536000:  # More than a year
             # Convert to local time for display
-            local_dt = utc_dt + (datetime.now() - datetime.utcnow())
+            local_dt = timestamp + (datetime.now() - datetime.utcnow())
             return local_dt.strftime("%Y-%m-%d %H:%M:%S")
 
         if seconds < 0:  # Future dates within a year
@@ -247,7 +238,7 @@ def get_relative_time(timestamp_str):
             months = int(seconds / 2592000)
             return f"{prefix}{months} month{'s' if months != 1 else ''}{suffix}"
     except Exception:
-        return timestamp_str  # Return original string if parsing fails
+        return str(timestamp)  # Return original datetime if parsing fails
 
 
 @server.call_tool()
@@ -258,10 +249,8 @@ async def handle_call_tool(
     progress_token = context.meta.progressToken if context.meta else None
 
     if name == "ask_perplexity":
-        system_prompt = dedent(SYSTEM_PROMPT).strip()
-
         try:
-            # Initialize progress tracking with dynamic estimation
+            # Initialize progress tracking
             initial_estimate = 1000
             progress_counter = 0
             total_estimate = initial_estimate
@@ -275,95 +264,64 @@ async def handle_call_tool(
                     total=initial_estimate,
                 )
 
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{PERPLEXITY_API_BASE_URL}/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {PERPLEXITY_API_KEY}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "model": PERPLEXITY_MODEL_ASK or PERPLEXITY_MODEL,
-                        "messages": [
-                            {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": arguments["query"]}
-                        ],
-                        "stream": True
-                    },
-                    timeout=60.0,
-                )
-                response.raise_for_status()
+            full_response = ""
+            citations = []
+            usage = {}
 
-                citations = []
-                full_response = ""
-                usage = {}
+            async for content, current_citations, current_usage in perplexity_client.ask(arguments["query"]):
+                full_response += content
+                citations = current_citations
+                usage = current_usage
 
-                async for chunk in response.aiter_text():
-                    for line in chunk.split('\n'):
-                        line = line.strip()
-                        if line.startswith("data: "):
-                            try:
-                                data = json.loads(line[6:])
-                                if "usage" in data:
-                                    usage.update(data["usage"])
-                                if "citations" in data:
-                                    citations.extend(data["citations"])
-                                if data.get("choices"):
-                                    content = data["choices"][0].get(
-                                        "delta", {}).get("content", "")
-                                    full_response += content
+                # Update progress tracking
+                tokens_in_chunk = len(content.split())
+                progress_counter += tokens_in_chunk
+                chunk_count += 1
+                chunk_sizes.append(tokens_in_chunk)
 
-                                    # Update progress with dynamic estimation
-                                    tokens_in_chunk = len(content.split())
-                                    progress_counter += tokens_in_chunk
-                                    chunk_count += 1
-                                    chunk_sizes.append(tokens_in_chunk)
-
-                                    # Update total estimate every 5 chunks
-                                    if chunk_count % 5 == 0 and chunk_sizes:
-                                        avg_chunk_size = sum(
-                                            chunk_sizes) / len(chunk_sizes)
-                                        total_estimate = max(initial_estimate,
-                                                             int(progress_counter + avg_chunk_size * 10))
-
-                                    if progress_token:
-                                        await context.session.send_progress_notification(
-                                            progress_token=progress_token,
-                                            progress=progress_counter,
-                                            total=total_estimate,
-                                        )
-                            except json.JSONDecodeError:
-                                continue
-
-                # Format citations with numbered list starting from 1
-                unique_citations = list(dict.fromkeys(citations))
-                citation_list = "\n".join(
-                    f"{i}. {url}" for i, url in enumerate(unique_citations, start=1))
-
-                response_text = (
-                    f"{full_response}\n\n"
-                    f"Sources:\n{citation_list}\n\n"
-                    f"API Usage:\n"
-                    f"- Prompt tokens: {usage.get('prompt_tokens', 'N/A')}\n"
-                    f"- Completion tokens: {usage.get('completion_tokens', 'N/A')}\n"
-                    f"- Total tokens: {usage.get('total_tokens', 'N/A')}"
-                )
+                # Update total estimate every 5 chunks
+                if chunk_count % 5 == 0 and chunk_sizes:
+                    avg_chunk_size = sum(chunk_sizes) / len(chunk_sizes)
+                    total_estimate = max(initial_estimate,
+                                         int(progress_counter + avg_chunk_size * 10))
 
                 if progress_token:
                     await context.session.send_progress_notification(
                         progress_token=progress_token,
                         progress=progress_counter,
-                        total=progress_counter,  # Set final total to actual tokens received
+                        total=total_estimate,
                     )
 
-                return [
-                    types.TextContent(
-                        type="text",
-                        text=response_text
-                    )
-                ]
+            # Format citations with numbered list starting from 1
+            unique_citations = citations  # Keep all citations including duplicates
+            citation_list = "\n".join(
+                f"{i}. {url}" for i, url in enumerate(unique_citations, start=1))
 
-        except httpx.HTTPError as e:
+            # Format the response text for display
+            response_text = (
+                f"{full_response}\n\n"
+                f"Sources:\n{citation_list}\n\n"
+                f"API Usage:\n"
+                f"- Prompt tokens: {usage.get('prompt_tokens', 'N/A')}\n"
+                f"- Completion tokens: {usage.get('completion_tokens', 'N/A')}\n"
+                f"- Total tokens: {usage.get('total_tokens', 'N/A')}"
+            )
+
+            if progress_token:
+                await context.session.send_progress_notification(
+                    progress_token=progress_token,
+                    progress=progress_counter,
+                    total=progress_counter  # Set final total to actual tokens received
+                )
+
+            return [
+                types.TextContent(
+                    type="text",
+                    text=response_text
+                )
+            ]
+
+        except Exception as e:
             if progress_token:
                 await context.session.send_progress_notification(
                     progress_token=progress_token,
@@ -386,16 +344,14 @@ async def handle_call_tool(
         # Get full chat history
         chat_history = get_chat_history(chat_id)
 
-        system_prompt = dedent(SYSTEM_PROMPT).strip()
-
-        # Initialize progress tracking with dynamic estimation
-        initial_estimate = 1000
-        progress_counter = 0
-        total_estimate = initial_estimate
-        chunk_sizes = deque(maxlen=10)  # Store last 10 chunk sizes
-        chunk_count = 0
-
         try:
+            # Initialize progress tracking
+            initial_estimate = 1000
+            progress_counter = 0
+            total_estimate = initial_estimate
+            chunk_sizes = deque(maxlen=10)
+            chunk_count = 0
+
             if progress_token:
                 await context.session.send_progress_notification(
                     progress_token=progress_token,
@@ -403,102 +359,76 @@ async def handle_call_tool(
                     total=initial_estimate,
                 )
 
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{PERPLEXITY_API_BASE_URL}/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {PERPLEXITY_API_KEY}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "model": PERPLEXITY_MODEL_CHAT or PERPLEXITY_MODEL,
-                        "messages": [
-                            {"role": "system", "content": system_prompt},
-                            *chat_history,
-                        ],
-                        "stream": True
-                    },
-                    timeout=60.0,
-                )
-                response.raise_for_status()
+            full_response = ""
+            citations = []
+            usage = {}
 
-                citations = []
-                full_response = ""
-                usage = {}
+            async for content, current_citations, current_usage in perplexity_client.chat(chat_history):
+                full_response += content
+                citations = current_citations
+                usage = current_usage
 
-                async for chunk in response.aiter_text():
-                    for line in chunk.split('\n'):
-                        line = line.strip()
-                        if line.startswith("data: "):
-                            try:
-                                data = json.loads(line[6:])
-                                if "usage" in data:
-                                    usage.update(data["usage"])
-                                if "citations" in data:
-                                    citations.extend(data["citations"])
-                                if data.get("choices"):
-                                    content = data["choices"][0].get(
-                                        "delta", {}).get("content", "")
-                                    full_response += content
+                # Update progress tracking
+                tokens_in_chunk = len(content.split())
+                progress_counter += tokens_in_chunk
+                chunk_count += 1
+                chunk_sizes.append(tokens_in_chunk)
 
-                                    # Update progress with dynamic estimation
-                                    tokens_in_chunk = len(content.split())
-                                    progress_counter += tokens_in_chunk
-                                    chunk_count += 1
-                                    chunk_sizes.append(tokens_in_chunk)
-
-                                    # Update total estimate every 5 chunks
-                                    if chunk_count % 5 == 0 and chunk_sizes:
-                                        avg_chunk_size = sum(
-                                            chunk_sizes) / len(chunk_sizes)
-                                        total_estimate = max(initial_estimate,
-                                                             int(progress_counter + avg_chunk_size * 10))
-
-                                    if progress_token:
-                                        await context.session.send_progress_notification(
-                                            progress_token=progress_token,
-                                            progress=progress_counter,
-                                            total=total_estimate,
-                                        )
-                            except json.JSONDecodeError:
-                                continue
-
-                # Format citations with numbered list starting from 1
-                unique_citations = list(dict.fromkeys(citations))
-                citation_list = "\n".join(
-                    f"{i}. {url}" for i, url in enumerate(unique_citations, start=1))
-
-                # Store assistant response
-                store_message(chat_id, "assistant", full_response)
-
-                # Format chat history
-                history_text = "\nChat History:\n"
-                for msg in chat_history:
-                    role = "You" if msg["role"] == "user" else "Assistant"
-                    history_text += f"\n{role}: {msg['content']}\n"
-
-                response_text = (
-                    f"Chat ID: {chat_id}\n"
-                    f"{history_text}\n"
-                    f"Current Response:\n{full_response}\n\n"
-                    f"Sources:\n{citation_list}"
-                )
+                # Update total estimate every 5 chunks
+                if chunk_count % 5 == 0 and chunk_sizes:
+                    avg_chunk_size = sum(chunk_sizes) / len(chunk_sizes)
+                    total_estimate = max(initial_estimate,
+                                         int(progress_counter + avg_chunk_size * 10))
 
                 if progress_token:
                     await context.session.send_progress_notification(
                         progress_token=progress_token,
                         progress=progress_counter,
-                        total=progress_counter,  # Set final total to actual tokens received
+                        total=total_estimate,
                     )
 
-                return [
-                    types.TextContent(
-                        type="text",
-                        text=response_text
-                    )
-                ]
+            # Format citations with numbered list starting from 1
+            unique_citations = citations  # Keep all citations including duplicates
+            citation_list = "\n".join(
+                f"{i}. {url}" for i, url in enumerate(unique_citations, start=1))
 
-        except httpx.HTTPError as e:
+            # Format full response with sources for storage
+            response_with_sources = (
+                f"{full_response}\n\n"
+                f"Sources:\n{citation_list}"
+            )
+
+            # Store assistant response
+            store_message(chat_id, "assistant", response_with_sources)
+
+            # Format chat history
+            history_text = "\nChat History:\n"
+            for msg in chat_history:
+                role = "You" if msg["role"] == "user" else "Assistant"
+                history_text += f"\n{role}: {msg['content']}\n"
+
+            response_text = (
+                f"Chat ID: {chat_id}\n"
+                f"{history_text}\n"
+                f"Current Response:\n{full_response}\n\n"
+                f"Sources:\n{citation_list}"
+            )
+
+            if progress_token:
+                await context.session.send_progress_notification(
+                    progress_token=progress_token,
+                    progress=progress_counter,
+                    total=progress_counter,  # Set final total to actual tokens received
+                )
+
+            return [
+                types.TextContent(
+                    type="text",
+                    text=response_text
+                )
+            ]
+
+        except Exception as e:
             if progress_token:
                 await context.session.send_progress_notification(
                     progress_token=progress_token,
@@ -512,91 +442,61 @@ async def handle_call_tool(
         page_size = 50
         offset = (page - 1) * page_size
 
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
+        with db_manager.get_session() as session:
+            # Get total count for pagination info
+            total_chats = session.query(Chat).count()
+            total_pages = (total_chats + page_size - 1) // page_size
 
-        # Get total count for pagination info
-        c.execute("SELECT COUNT(*) FROM chats")
-        total_chats = c.fetchone()[0]
-        total_pages = (total_chats + page_size - 1) // page_size
+            # Get paginated chats with message count
+            chats = session.query(Chat).order_by(
+                Chat.created_at.desc()).offset(offset).limit(page_size).all()
 
-        # Get paginated chats with their latest message
-        c.execute('''
-            SELECT 
-                c.id,
-                c.title,
-                c.created_at,
-                (SELECT COUNT(*) FROM messages m WHERE m.chat_id = c.id) as message_count
-            FROM chats c
-            ORDER BY c.created_at DESC
-            LIMIT ? OFFSET ?
-        ''', (page_size, offset))
-
-        chats = c.fetchall()
-        conn.close()
-
-        # Format the response
-        header = (
-            f"Page {page} of {total_pages}\n"
-            f"Total chats: {total_chats}\n\n"
-            f"{'=' * 40}\n"
-        )
-
-        chat_list = []
-        for chat_id, title, created_at, message_count in chats:
-            relative_time = get_relative_time(created_at)
-            chat_list.append(
-                f"Chat ID: {chat_id}\n"
-                f"Title: {title or 'Untitled'}\n"
-                f"Created: {relative_time}\n"
-                f"Messages: {message_count}"
+            # Format the response
+            header = (
+                f"Page {page} of {total_pages}\n"
+                f"Total chats: {total_chats}\n\n"
+                f"{'=' * 40}\n"
             )
 
-        response_text = header + "\n\n".join(chat_list)
+            chat_list = []
+            for chat in chats:
+                message_count = len(chat.messages)
+                relative_time = get_relative_time(chat.created_at.scalar())
+                title = chat.title.scalar() if chat.title is not None else 'Untitled'
+                chat_list.append(
+                    f"Chat ID: {chat.id}\n"
+                    f"Title: {title}\n"
+                    f"Created: {relative_time}\n"
+                    f"Messages: {message_count}"
+                )
 
-        return [types.TextContent(type="text", text=response_text)]
+            response_text = header + "\n\n".join(chat_list)
+
+            return [types.TextContent(type="text", text=response_text)]
 
     elif name == "read_chat_perplexity":
         chat_id = arguments["chat_id"]
 
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-
-        # Get chat info
-        c.execute("SELECT title, created_at FROM chats WHERE id = ?", (chat_id,))
-        chat_info = c.fetchone()
-
-        if not chat_info:
-            conn.close()
+        chat = db_manager.get_chat(chat_id)
+        if not chat:
             raise ValueError(f"Chat with ID {chat_id} not found")
 
-        title, created_at = chat_info
-
-        # Get chat history with timestamps
-        c.execute('''
-            SELECT role, content, timestamp 
-            FROM messages 
-            WHERE chat_id = ? 
-            ORDER BY timestamp
-        ''', (chat_id,))
-
-        messages = c.fetchall()
-        conn.close()
+        messages = db_manager.get_chat_messages(chat_id)
 
         # Format the response
         chat_header = (
-            f"Chat ID: {chat_id}\n"
-            f"Title: {title or 'Untitled'}\n"
-            f"Created: {created_at}\n"
+            f"Chat ID: {chat.id}\n"
+            f"Title: {chat.title.scalar() if chat.title is not None else 'Untitled'}\n"
+            f"Created: {chat.created_at.scalar()}\n"
             f"Messages: {len(messages)}\n\n"
             f"{'=' * 40}\n\n"
         )
 
         message_history = []
-        for role, content, timestamp in messages:
-            role_display = "You" if role == "user" else "Assistant"
+        for message in messages:
+            role_display = "You" if message.role.scalar() == "user" else "Assistant"
             message_history.append(
-                f"[{timestamp}] {role_display}:\n{content}\n"
+                f"[{message.timestamp.scalar()}] {role_display}:\n{message.content.scalar()}\n"
             )
 
         response_text = chat_header + "\n".join(message_history)
@@ -608,7 +508,6 @@ async def handle_call_tool(
 
 
 async def main():
-
     try:
         async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
             await server.run(

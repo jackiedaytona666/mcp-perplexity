@@ -1,6 +1,6 @@
 # Perplexity Chat MCP Server
 
-The Perplexity MCP Server provides a Python-based interface to the Perplexity API, offering tools for querying responses, maintaining chat history, and managing conversations. It supports model configuration via environment variables and stores chat data locally. Built with Hatch, it's designed for integration with development environments.
+The Perplexity MCP Server provides a Python-based interface to the Perplexity API, offering tools for querying responses, maintaining chat history, and managing conversations. It supports model configuration via environment variables and stores chat data locally. Built with Python and setuptools, it's designed for integration with development environments.
 
 The MCP Server is desined to mimick how users interact with the Perplexity Chat on their browser by allowing your models to ask questions, continue conversations, and list all your chats.
 
@@ -60,59 +60,23 @@ To use this MCP server, configure your client with these settings (configuration
 }
 ```
 
-**Key Configuration Notes:**
-- Replace `"your-api-key"` with your Perplexity API key
-- Environment variables can specify different models for ask/chat tools
-- `DB_PATH` sets custom chat history location (default: chats.db)
+## Environment Variables
 
-### Cursor IDE Installation Helpers
+Configure the MCP Perplexity server using the following environment variables:
 
-For Cursor users, we provide automated scripts that:
+| Variable | Description | Default Value | Required |
+|----------|-------------|---------------|----------|
+| `PERPLEXITY_API_KEY` | Your Perplexity API key | None | Yes |
+| `PERPLEXITY_MODEL` | Default model for interactions | `sonar-pro` | No |
+| `PERPLEXITY_MODEL_ASK` | Specific model for `ask_perplexity` tool | Uses `PERPLEXITY_MODEL` | No |
+| `PERPLEXITY_MODEL_CHAT` | Specific model for `chat_perplexity` tool | Uses `PERPLEXITY_MODEL` | No |
+| `DB_PATH` | Path to store chat history database | `chats.db` | No |
+| `WEB_UI_ENABLED` | Enable or disable web UI | `false` | No |
+| `WEB_UI_PORT` | Port for web UI | `8050` | No |
+| `WEB_UI_HOST` | Host for web UI | `127.0.0.1` | No |
+| `DEBUG_LOGS` | Enable detailed logging | `false` | No |
 
-1. Install uvx (Python package manager) if missing
-2. Set up the `mcp-starter` helper tool
-3. Generate appropriate Cursor command to be added to the MCP settings.
-
-<details>
-<summary><h5>Windows Installation</h5></summary>
-
-1. Download the `install.ps1` script
-2. Open PowerShell as Administrator
-3. Allow script execution and run:
-```powershell
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-.\install.ps1
-```
-
-The script will:
-- Check for required dependencies (curl, PowerShell)
-- Install uvx if not present
-- Install mcp-starter to `%USERPROFILE%\.local\bin`
-- Create a configuration file at `%USERPROFILE%\.config\mcp-starter\config.json`
-- Prompt for your Perplexity API key and model preferences
-</details>
-
-<details>
-<summary><h5>Unix Installation (Linux/MacOS)</h5></summary>
-
-1. Download the `install.sh` script
-2. Open Terminal
-3. Navigate to the directory containing the script
-4. Make the script executable and run it:
-```bash
-chmod +x install.sh  # Only needed if downloaded directly from browser
-./install.sh
-```
-
-The script will:
-- Check for required dependencies (curl)
-- Install uvx if not present
-- Install mcp-starter to `$HOME/.local/bin`
-- Create a configuration file at `$HOME/.config/mcp-starter/config.json`
-- Prompt for your Perplexity API key and model preferences
-</details>
-
-#### Using Smithery CLI (Cursor Only)
+#### Using Smithery CLI
 ```bash
 npx -y @smithery/cli@latest run @daniel-lxs/mcp-perplexity --config "{\"perplexityApiKey\":\"pplx-abc\",\"perplexityModel\":\"sonar-pro\"}"
 ```
@@ -140,28 +104,52 @@ Lists all available chat conversations.  It returns a paginated list of chats, s
 ### read_chat_perplexity
 Retrieves the complete conversation history for a given `chat_id`.  This tool returns all messages in the chat, including timestamps and roles (user or assistant). This tool does *not* make any API calls to Perplexity; it only reads from the local database.
 
+## Web UI
+
+The MCP Perplexity server now includes a web interface for easier interaction and management of chats.
+
+### Features
+- Interactive chat interface
+- Chat history management
+- Real-time message display
+
+### Screenshots
+
+#### Chat List View
+![image](https://github.com/user-attachments/assets/a8aebd19-f58a-4d6c-988e-ea1c1ca7f174)
+
+#### Chat Interface
+![image](https://github.com/user-attachments/assets/627bfcdb-2214-47e6-a55e-3987737ad00f)
+
+### Accessing the Web UI
+
+When `WEB_UI_ENABLED` is set to `true`, the web UI will be available at `http://WEB_UI_HOST:WEB_UI_PORT`. 
+
+By default, this is `http://127.0.0.1:8050`.
 
 ## Development
 
-This project uses [Hatch](https://hatch.pypa.io/latest/) for development and builds. To get started:
+This project uses setuptools for development and builds. To get started:
 
-1. Install Hatch (if not already installed):
+1. Create a virtual environment:
    ```bash
-   pip install hatch
+   python -m venv .venv
+   source .venv/bin/activate  # On Linux/macOS
+   # or
+   .venv\Scripts\activate  # On Windows
    ```
 
-2. Create and activate the Hatch environment:
+2. Install the project in editable mode with all dependencies:
    ```bash
-   hatch env create
-   hatch shell
+   pip install -e .
    ```
 
 3. Build the project:
    ```bash
-   hatch build
+   python -m build
    ```
 
-The Hatch environment will automatically install all required dependencies.
+The virtual environment will contain all required dependencies for development.
 
 ## Contributing
 

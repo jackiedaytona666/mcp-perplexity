@@ -1,13 +1,18 @@
 [project]
 name = "mcp-perplexity"
-version = "0.4.2"
+version = "0.5.0"
 description = "MCP Server for the Perplexity API."
 readme = "README.md"
 requires-python = ">=3.10"
+license = { text = "MIT" }
 dependencies = [ 
     "mcp>=1.0.0",
     "httpx",
     "haikunator>=2.1.0",
+    "quart>=0.19.4",
+    "sqlalchemy>=2.0.0",
+    "hypercorn>=0.15.0",
+    "markdown2>=2.4.0"
 ]
 
 [project.urls]
@@ -18,16 +23,15 @@ Repository = "https://github.com/daniel-lxs/mcp-perplexity"
 name = "Daniel Riccio"
 email = "ricciodaniel98@gmail.com"
 
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project.scripts]
 mcp-perplexity = "mcp_perplexity:main"
 
-[tool.setuptools]
-package-dir = {"" = "src"}
-packages = ["mcp_perplexity"]
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+dev = ["pyinstaller>=6.3.0"]
 
 [tool.semantic_release]
 version_variable = ["src/mcp_perplexity/__init__.py:__version__"]
