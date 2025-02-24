@@ -48,6 +48,8 @@
 
 ### Fix
 
+* fix: ci builds ubuntu and macos ([`53c51ea`](https://github.com/daniel-lxs/mcp-perplexity/commit/53c51eac37679ff7cea406c880da378625b94dd0))
+
 * fix: simplify ci ([`4b45d24`](https://github.com/daniel-lxs/mcp-perplexity/commit/4b45d2449f59c90848d50a99a933d139fa38f056))
 
 * fix: Preserve citation order and duplicates in Perplexity client
