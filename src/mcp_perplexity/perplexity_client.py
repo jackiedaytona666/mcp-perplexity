@@ -120,7 +120,7 @@ class PerplexityClient:
                                 content = data["choices"][0].get(
                                     "delta", {}).get("content", "")
                                 if content:
-                                    yield content, list(dict.fromkeys(citations)), usage
+                                    yield content, citations.copy(), usage
                         except json.JSONDecodeError:
                             continue
 

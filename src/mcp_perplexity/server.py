@@ -290,7 +290,7 @@ async def handle_call_tool(
                     )
 
             # Format citations with numbered list starting from 1
-            unique_citations = list(dict.fromkeys(citations))
+            unique_citations = citations  # Keep all citations including duplicates
             citation_list = "\n".join(
                 f"{i}. {url}" for i, url in enumerate(unique_citations, start=1))
 
@@ -382,7 +382,7 @@ async def handle_call_tool(
                     )
 
             # Format citations with numbered list starting from 1
-            unique_citations = list(dict.fromkeys(citations))
+            unique_citations = citations  # Keep all citations including duplicates
             citation_list = "\n".join(
                 f"{i}. {url}" for i, url in enumerate(unique_citations, start=1))
 
