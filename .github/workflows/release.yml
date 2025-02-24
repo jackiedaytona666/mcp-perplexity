@@ -11,35 +11,75 @@ permissions:
   id-token: write
 
 jobs:
-  semantic-release:
+  release:
     runs-on: ubuntu-latest
     outputs:
-      released: ${{ steps.release.outputs.new_release_published }}
-      version: ${{ steps.release.outputs.new_release_version }}
+      released: ${{ steps.release.outputs.released }}
+      version: ${{ steps.release.outputs.version }}
     concurrency: release
+
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: "3.x"
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install build
+        python -m pip install build python-semantic-release
+
+    - name: Build package
+      run: python -m build
+
     - name: Python Semantic Release
       id: release
-      uses: python-semantic-release/python-semantic-release@v9.20.0
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "action@github.com"
+        semantic-release version
+        semantic-release publish
+
+    - name: Store the distribution packages
+      uses: actions/upload-artifact@v4
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        git_committer_name: "github-actions"
-        git_committer_email: "actions@users.noreply.github.com"
+        name: python-package-distributions
+        path: dist/
+        retention-days: 5
+        if-no-files-found: error
+
+  publish:
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/mcp-perplexity
+    permissions:
+      id-token: write
+
+    steps:
+    - name: Download built distributions
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        packages-dir: dist/
+        verbose: true
 
   build:
-    needs: semantic-release
-    if: needs.semantic-release.outputs.released == 'true'
+    needs: release
+    if: needs.release.outputs.released == 'true'
     strategy:
       matrix:
         include:
@@ -109,35 +149,11 @@ jobs:
           dist/${{ matrix.platform }}/*
           dist/${{ matrix.platform }}.sha256
         retention-days: 5
-  pypi-publish:
-    needs: semantic-release
-    runs-on: ubuntu-latest
-    if: needs.semantic-release.outputs.released == 'true'
-    permissions:
-      id-token: write
-    environment:
-      name: pypi
-      url: https://pypi.org/p/mcp-perplexity
-    steps:
-    - uses: actions/checkout@v4
-    
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-        
-    - name: Build package
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install build
-        python -m build
-        
-    - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
 
   release-assets:
-    needs: [semantic-release, build, pypi-publish]
+    needs: [release, build]
     runs-on: ubuntu-latest
-    if: needs.semantic-release.outputs.released == 'true'
+    if: needs.release.outputs.released == 'true'
     permissions:
       contents: write
     steps:
@@ -161,4 +177,4 @@ jobs:
         files: |
           artifacts/binaries-*/mcp-perplexity-*
           artifacts/*.sha256
-        tag_name: v${{ needs.semantic-release.outputs.version }} 
+        tag_name: v${{ needs.release.outputs.version }} 
