@@ -112,7 +112,7 @@ def create_app():
                 details_element = (
                     f'<details class="think">'
                     f'<summary>Thought process</summary>'
-                    f'{processed_content}'
+                    f'<div class="think-content">{processed_content}</div>'
                     f'</details>'
                 )
                 

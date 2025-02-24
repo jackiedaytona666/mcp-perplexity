@@ -74,6 +74,94 @@
       flex-direction: column;
     }
 
+    /* Think element styling */
+    details.think {
+      display: block;
+      border-left: 4px solid var(--tokyo-accent-blue);
+      border-radius: 0 8px 8px 0;
+      background-color: rgba(36, 40, 59, 0.6);
+      padding: 0.5rem 1rem;
+      margin: 1.5rem 0;
+      color: var(--tokyo-text-secondary);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    details.think:hover {
+      color: var(--tokyo-text-default);
+      border-left-color: var(--tokyo-accent-green);
+      background-color: rgba(36, 40, 59, 0.8);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    details.think[open] {
+      color: var(--tokyo-text-default);
+      border-left-color: var(--tokyo-accent-purple);
+      background-color: rgba(36, 40, 59, 0.8);
+    }
+
+    details.think > summary {
+      outline: none;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      user-select: none;
+      color: var(--tokyo-accent-blue);
+      transition: color 0.2s ease;
+      list-style: none;
+      position: relative;
+      padding-left: 1.5rem;
+    }
+
+    details.think > summary::before {
+      content: "▶";
+      position: absolute;
+      left: 0;
+      font-size: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      transition: transform 0.3s ease;
+    }
+
+    details.think[open] > summary::before {
+      transform: translateY(-50%) rotate(90deg);
+    }
+
+    details.think > summary:hover {
+      color: var(--tokyo-accent-green);
+    }
+
+    details.think[open] > summary {
+      color: var(--tokyo-accent-purple);
+    }
+
+    details.think .think-content {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(120, 124, 153, 0.2);
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    details.think .think-content * {
+      color: inherit;
+    }
+
+    details.think .think-content p {
+      margin-bottom: 0.5rem;
+    }
+
+    details.think .think-content pre {
+      background-color: rgba(26, 27, 38, 0.6);
+      border-radius: 4px;
+      padding: 0.75rem;
+      margin: 0.75rem 0;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(-10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
     .chat-container {
       max-height: calc(100vh - 200px);
       overflow-y: auto;
@@ -206,43 +294,9 @@
                   wordBreak: 'break-word',
                   whiteSpace: 'pre-wrap'
                 },
-
-                'think': {
-                  display: 'block',
-                  borderLeft: '2px solid var(--tokyo-accent-blue)',
-                  paddingLeft: '1rem',
-                  margin: '1rem 0',
-                  color: 'var(--tokyo-text-secondary)',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  '& p': {
-                    display: 'block',
-                    color: 'inherit',
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word'
-                  },
-                  '& *': {
-                    color: 'inherit'
-                  },
-                  '&:hover': {
-                    color: 'var(--tokyo-text-default)',
-                    borderLeftColor: 'var(--tokyo-accent-green)'
-                  },
-                  '&[open]': {
-                    color: 'var(--tokyo-text-default)',
-                    borderLeftColor: 'var(--tokyo-accent-purple)'
-                  },
-                  '& > summary': {
-                    outline: 'none',
-                    fontWeight: '500',
-                    marginBottom: '0.5rem',
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    display: 'list-item'
-                  },
-                  '& > summary::marker': {
-                    color: 'var(--tokyo-accent-blue)'
-                  }
+                '@keyframes fadeIn': {
+                  '0%': { opacity: 0, transform: 'translateY(-10px)' },
+                  '100%': { opacity: 1, transform: 'translateY(0)' }
                 }
               }
             }
