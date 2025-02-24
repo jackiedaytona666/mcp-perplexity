@@ -1,20 +1,6 @@
 # CHANGELOG
 
 
-## v0.5.0 (2025-02-24)
-
-### Continuous Integration
-
-- Add Python setup and dependencies to release workflow
-  ([`1ef0095`](https://github.com/daniel-lxs/mcp-perplexity/commit/1ef0095ea79f090d5856fb7079242fafcc80e9fa))
-
-- Set up Python 3.10 in release workflow - Install build dependencies for Python package - Prepare
-  environment for semantic release process
-
-- Refactor release workflow with improved semantic release and publishing
-  ([`fb80404`](https://github.com/daniel-lxs/mcp-perplexity/commit/fb8040418c3757f996c15db5ce64e7c9e30144a2))
-
-
 ## v0.4.2 (2025-02-21)
 
 ### Bug Fixes

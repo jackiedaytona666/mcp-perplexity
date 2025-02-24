@@ -39,20 +39,79 @@ branch = "main"
 upload_to_pypi = false
 upload_to_release = true
 build_command = "python -m build"
-changelog_components = "default"
-changelog_sections = [
-    { type = "feat", section = "What's New", hidden = false },
-    { type = "fix", section = "Bug Fixes", hidden = false },
-    { type = "perf", section = "Performance Improvements", hidden = false },
-    { type = "docs", section = "Documentation", hidden = false },
-    { type = "refactor", section = "Code Refactoring", hidden = false },
-    { type = "BREAKING", section = "Breaking Changes", hidden = false },
-    { type = "test", section = "Testing", hidden = true },
-    { type = "build", section = "Build System", hidden = true },
-    { type = "style", section = "Code Style", hidden = true },
-    { type = "chore", section = "Maintenance", hidden = false },
-    { type = "ci", section = "CI/CD", hidden = true }
-]
 commit_parser = "angular"
 major_on_zero = false
 tag_format = "v{version}"
+
+# Explicitly define all sections and make sure none are hidden
+[tool.semantic_release.changelog]
+template_dir = "templates"
+changelog_file = "CHANGELOG.md"
+exclude_commit_patterns = []
+
+[tool.semantic_release.changelog.environment]
+trim_blocks = true
+lstrip_blocks = true
+
+# Define sections with proper visibility
+[[tool.semantic_release.changelog.sections]]
+type = "feat"
+section = "Features"
+hidden = false
+
+[[tool.semantic_release.changelog.sections]]
+type = "fix"
+section = "Bug Fixes"
+hidden = false
+
+[[tool.semantic_release.changelog.sections]]
+type = "perf"
+section = "Performance Improvements"
+hidden = false
+
+[[tool.semantic_release.changelog.sections]]
+type = "docs"
+section = "Documentation"
+hidden = false
+
+[[tool.semantic_release.changelog.sections]]
+type = "style"
+section = "Code Style"
+hidden = false
+
+[[tool.semantic_release.changelog.sections]]
+type = "refactor"
+section = "Code Refactoring"
+hidden = false
+
+[[tool.semantic_release.changelog.sections]]
+type = "test"
+section = "Tests"
+hidden = false
+
+[[tool.semantic_release.changelog.sections]]
+type = "build"
+section = "Build System"
+hidden = false
+
+[[tool.semantic_release.changelog.sections]]
+type = "ci"
+section = "Continuous Integration"
+hidden = false
+
+[[tool.semantic_release.changelog.sections]]
+type = "chore"
+section = "Maintenance"
+hidden = false
+
+# Add release notes configuration
+[tool.semantic_release.remote]
+token = "GH_TOKEN"
+type = "github"
+
+[tool.semantic_release.publish]
+dist_glob_patterns = ["dist/*.tar.gz", "dist/*.whl"]
+
+[tool.semantic_release.templates]
+changelog_template = "changelog.md.j2"
+release_notes_template = "release_notes.md.j2"

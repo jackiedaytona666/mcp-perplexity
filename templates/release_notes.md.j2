@@ -1,0 +1,18 @@
+# {{ version.version }} ({{ version.date }})
+
+{% for section in version.sections %}
+## {{ section.name }}
+
+{% for commit in section.commits %}
+- {{ commit.message }}
+{% endfor %}
+
+{% endfor %}
+
+## Installation
+
+```bash
+pip install mcp-perplexity=={{ version.version }}
+```
+
+Or download the pre-built binaries from the release assets. 

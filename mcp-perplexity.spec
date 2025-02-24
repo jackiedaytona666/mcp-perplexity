@@ -1,10 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
+# To build manually use:
+# pyinstaller --onefile --name mcp-perplexity src/mcp_perplexity/__init__.py
 import os
+import sys
+from PyInstaller.utils.hooks import collect_data_files
 
 base_path = os.path.dirname(os.path.abspath(SPEC))
 
 a = Analysis(
-    ['/home/daniel/Workspace/mcp-perplexity/.venv/bin/mcp-perplexity'],
+    ['src/mcp_perplexity/__init__.py'],
     pathex=[],
     binaries=[],
     datas=[
