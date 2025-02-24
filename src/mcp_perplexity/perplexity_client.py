@@ -17,7 +17,7 @@ Your responses must:
 3. If no relevant results are found, suggest 2-3 alternative search queries that might better uncover the needed information
 4. Prioritize technical accuracy, especially for programming-related questions"""
 
-TIMEOUT = 60.0
+TIMEOUT = 120.0
 
 # Define model profiles with validation ranges
 MODEL_PROFILES = {
