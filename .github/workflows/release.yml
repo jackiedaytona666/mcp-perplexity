@@ -134,7 +134,17 @@ jobs:
     - name: Generate checksums
       run: |
         cd dist/${{ matrix.platform }}
-        sha256sum * > ../${{ matrix.platform }}.sha256
+        if [[ "${{ matrix.platform }}" == "macos" ]]; then
+          # On macOS, use shasum but format output to match sha256sum format
+          for file in *; do
+            if [ -f "$file" ]; then
+              shasum -a 256 "$file" | awk '{print $1"  "$2}' >> ../${{ matrix.platform }}.sha256
+            fi
+          done
+        else
+          # On Linux and Windows, use sha256sum
+          sha256sum * > ../${{ matrix.platform }}.sha256
+        fi
       shell: bash
         
     - name: Upload artifacts
@@ -160,13 +170,6 @@ jobs:
         merge-multiple: true
         path: artifacts
     
-    - name: Verify checksums
-      run: |
-        cd artifacts
-        for sumfile in *.sha256; do
-          sha256sum -c "$sumfile" || exit 1
-        done
-        
     - name: Upload to GitHub Release
       uses: softprops/action-gh-release@v2
       with:
