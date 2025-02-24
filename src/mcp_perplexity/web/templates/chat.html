@@ -4,13 +4,13 @@
 
 {% block content %}
 <div class="dark:bg-tokyo-bg-secondary shadow sm:rounded-lg">
-    <div class="px-4 py-5 sm:px-6">
+    <div class="px-4 py-3 sm:px-6">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-lg leading-6 font-medium dark:text-tokyo-accent-blue">
+                <h2 class="text-md leading-6 font-medium dark:text-tokyo-accent-blue">
                     {{ chat['title'] or 'Untitled Chat' }}
                 </h2>
-                <p class="mt-1 max-w-2xl text-sm dark:text-tokyo-text">
+                <p class="mt-0.5 max-w-2xl text-sm dark:text-tokyo-text">
                     Created {{ chat['created_at'].strftime('%Y-%m-%d %H:%M:%S') }}
                 </p>
             </div>
@@ -36,7 +36,7 @@
     </div>
     
     <div class="border-t dark:border-tokyo-bg-accent">
-        <div class="chat-container px-4 py-5 sm:px-6" 
+        <div class="chat-container px-4 py-3 sm:px-6" 
              hx-get="/api/chat/{{ chat['id'] }}/messages" 
              hx-trigger="every 5s"
              hx-target="this" 

@@ -86,13 +86,13 @@
         
         .message.assistant {
             background-color: var(--tokyo-bg-message);
-            margin-right: 20%;
+            margin-right: 5%;
             color: var(--tokyo-text-default);
         }
         
         .message.user {
             background-color: var(--tokyo-bg-accent);
-            margin-left: 20%;
+            margin-left: 5%;
             color: var(--tokyo-text-default);
         }
         
@@ -172,7 +172,55 @@
                                 a: { color: 'var(--tokyo-accent-blue)' },
                                 code: { color: 'var(--tokyo-accent-orange)' },
                                 'pre code': { color: 'var(--tokyo-text-default)' },
-                                'pre': { backgroundColor: 'var(--tokyo-bg-accent)' }
+                                'pre': { 
+                                    backgroundColor: 'var(--tokyo-bg-accent)',
+                                    overflowX: 'auto',
+                                    borderRadius: '0.5rem',
+                                    padding: '1rem',
+                                    margin: '0.5rem 0',
+                                    width: '100%',
+                                    whiteSpace: 'pre',
+                                    overflowWrap: 'normal',
+                                    boxDecorationBreak: 'clone'
+                                },
+                                'code': {
+                                    backgroundColor: 'var(--tokyo-bg-accent)',
+                                    padding: '0.2em 0.4em',
+                                    borderRadius: '0.25rem',
+                                    whiteSpace: 'pre',
+                                    boxDecorationBreak: 'clone'
+                                },
+                                'pre code': {
+                                    backgroundColor: 'transparent',
+                                    padding: 0,
+                                    borderRadius: 0,
+                                    whiteSpace: 'pre'
+                                },
+                                'think': {
+                                    display: 'block',
+                                    borderLeft: '2px solid var(--tokyo-accent-blue)',
+                                    paddingLeft: '1rem',
+                                    margin: '1rem 0',
+                                    color: 'var(--tokyo-text-secondary)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        color: 'var(--tokyo-text-default)',
+                                        borderLeftColor: 'var(--tokyo-accent-green)'
+                                    },
+                                    '&[open]': {
+                                        color: 'var(--tokyo-text-default)',
+                                        borderLeftColor: 'var(--tokyo-accent-purple)'
+                                    },
+                                    '& > summary': {
+                                        outline: 'none',
+                                        fontWeight: '500',
+                                        marginBottom: '0.5rem'
+                                    },
+                                    '& > summary::marker': {
+                                        color: 'var(--tokyo-accent-blue)'
+                                    }
+                                }
                             }
                         }
                     }
@@ -184,10 +232,10 @@
 <body class="dark:bg-tokyo-bg min-h-screen">
     <nav class="shadow-sm dark:bg-tokyo-bg-secondary">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
+            <div class="flex justify-between h-12">
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
-                        <a href="/" class="text-xl font-bold dark:text-tokyo-text">
+                        <a href="/" class="text-lg font-bold dark:text-tokyo-text">
                             MCP Perplexity
                         </a>
                     </div>
@@ -196,12 +244,12 @@
         </div>
     </nav>
 
-    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow">
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex-grow">
         {% block content %}{% endblock %}
     </main>
 
     <footer class="border-t dark:bg-tokyo-bg-secondary dark:border-tokyo-bg-accent mt-auto">
-        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8">
             <p class="text-center text-sm dark:text-tokyo-text-secondary">
               <a href="https://github.com/daniel-lxs" class="text-tokyo-accent-blue">Made with ❤️</a>
             </p>
