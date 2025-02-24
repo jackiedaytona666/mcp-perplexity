@@ -82,7 +82,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: ${{ matrix.platform == 'macos' && '3.11' || '3.10' }}
         architecture: x64
     
     - name: Install dependencies
@@ -96,6 +96,8 @@ jobs:
       run: |
         brew install gettext
         brew link gettext --force
+        echo "LDFLAGS=-L/usr/local/opt/gettext/lib" >> $GITHUB_ENV
+        echo "CPPFLAGS=-I/usr/local/opt/gettext/include" >> $GITHUB_ENV
       shell: bash
 
     - name: Install UPX (Windows)
@@ -109,17 +111,24 @@ jobs:
 
     - name: Build executable
       run: |
-        EXTRA_FLAGS=""
-        if [ "${{ matrix.platform }}" = "windows" ]; then
-          EXTRA_FLAGS="--upx-dir ${{ env.UPX_DIR }}"
+        if [ "${{ matrix.platform }}" = "windows" ] && [ -n "${UPX_DIR}" ]; then
+          # Windows with UPX
+          pyinstaller mcp-perplexity.spec --distpath dist/${{ matrix.platform }}
+        else
+          # Linux and macOS
+          pyinstaller mcp-perplexity.spec --distpath dist/${{ matrix.platform }}
         fi
-        
-        pyinstaller --onefile \
-          --name ${{ matrix.artifact_name }} \
-          --distpath dist/${{ matrix.platform }} \
-          ${{ matrix.pyinstaller_flags }} \
-          $EXTRA_FLAGS \
-          mcp-perplexity.spec
+      shell: bash
+
+    - name: Rename binary if needed
+      run: |
+        cd dist/${{ matrix.platform }}
+        # Find the generated executable and rename it if needed
+        if [ -f "mcp-perplexity" ] && [ "mcp-perplexity" != "${{ matrix.artifact_name }}" ]; then
+          mv mcp-perplexity "${{ matrix.artifact_name }}"
+        elif [ -f "mcp-perplexity.exe" ] && [ "mcp-perplexity.exe" != "${{ matrix.artifact_name }}" ]; then
+          mv mcp-perplexity.exe "${{ matrix.artifact_name }}"
+        fi
       shell: bash
 
     - name: Generate checksums
