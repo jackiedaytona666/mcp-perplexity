@@ -123,12 +123,44 @@ jobs:
     - name: Rename binary if needed
       run: |
         cd dist/${{ matrix.platform }}
-        # Find the generated executable and rename it if needed
-        if [ -f "mcp-perplexity" ] && [ "mcp-perplexity" != "${{ matrix.artifact_name }}" ]; then
-          mv mcp-perplexity "${{ matrix.artifact_name }}"
-        elif [ -f "mcp-perplexity.exe" ] && [ "mcp-perplexity.exe" != "${{ matrix.artifact_name }}" ]; then
-          mv mcp-perplexity.exe "${{ matrix.artifact_name }}"
+        echo "Files in dist/${{ matrix.platform }} directory:"
+        ls -la
+        
+        # For macOS and Linux
+        if [[ "${{ matrix.platform }}" != "windows" ]] && [ -f "mcp-perplexity" ]; then
+          echo "Found mcp-perplexity binary, renaming to ${{ matrix.artifact_name }}"
+          mv "mcp-perplexity" "${{ matrix.artifact_name }}"
+        # For Windows
+        elif [[ "${{ matrix.platform }}" == "windows" ]] && [ -f "mcp-perplexity.exe" ]; then
+          echo "Found mcp-perplexity.exe, renaming to ${{ matrix.artifact_name }}"
+          mv "mcp-perplexity.exe" "${{ matrix.artifact_name }}"
+        else
+          echo "WARNING: Could not find expected binary to rename!"
+          # Look for any executable files as a fallback
+          if [[ "${{ matrix.platform }}" == "windows" ]]; then
+            # Find any .exe file
+            for file in *.exe; do
+              if [ -f "$file" ]; then
+                echo "Found $file, renaming to ${{ matrix.artifact_name }}"
+                mv "$file" "${{ matrix.artifact_name }}"
+                break
+              fi
+            done
+          else
+            # Find any executable without extension
+            for file in *; do
+              if [ -f "$file" ] && [ -x "$file" ] && [[ ! "$file" == *.* ]]; then
+                echo "Found $file, renaming to ${{ matrix.artifact_name }}"
+                mv "$file" "${{ matrix.artifact_name }}"
+                break
+              fi
+            done
+          fi
         fi
+        
+        # Verify the result
+        echo "Final files in directory:"
+        ls -la
       shell: bash
 
     - name: Generate checksums
@@ -170,11 +202,16 @@ jobs:
         merge-multiple: true
         path: artifacts
     
+    - name: Debug - List files in artifacts directory
+      run: |
+        echo "Listing all files in artifacts directory:"
+        find artifacts -type f | sort
+    
     - name: Upload to GitHub Release
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          artifacts/binaries-*/mcp-perplexity-*
+          artifacts/mcp-perplexity-*
           artifacts/*.sha256
         tag_name: v${{ needs.release.outputs.version }}
 
