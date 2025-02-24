@@ -1,6 +1,20 @@
 # CHANGELOG
 
 
+## v0.5.0 (2025-02-24)
+
+### Continuous Integration
+
+- Add Python setup and dependencies to release workflow
+  ([`1ef0095`](https://github.com/daniel-lxs/mcp-perplexity/commit/1ef0095ea79f090d5856fb7079242fafcc80e9fa))
+
+- Set up Python 3.10 in release workflow - Install build dependencies for Python package - Prepare
+  environment for semantic release process
+
+- Refactor release workflow with improved semantic release and publishing
+  ([`fb80404`](https://github.com/daniel-lxs/mcp-perplexity/commit/fb8040418c3757f996c15db5ce64e7c9e30144a2))
+
+
 ## v0.4.2 (2025-02-21)
 
 ### Bug Fixes
@@ -26,16 +40,32 @@ Extend timeout duration to allow for longer-running API requests in the server m
 
 ### Bug Fixes
 
+- Preserve citation order and duplicates in Perplexity client
+  ([`4e292fc`](https://github.com/daniel-lxs/mcp-perplexity/commit/4e292fcd28f6fbe265401abe699b8a388db4f17c))
+
+- Update citation handling to maintain original order and duplicates - Replace
+  `list(dict.fromkeys())` with direct citation list in perplexity_client.py and server.py - Ensure
+  consistent citation rendering across response generation
+
 - Title argument is no longer required as this argument is not necessary for existing chats
   ([`42180a5`](https://github.com/daniel-lxs/mcp-perplexity/commit/42180a5d9a984302b5301949d2147918d28e3999))
 
 ### Chores
+
+- Add MIT license to project configuration
+  ([`829ed82`](https://github.com/daniel-lxs/mcp-perplexity/commit/829ed825c847db4db4e94cb79c9f4e387dc69386))
+
+- Add PyInstaller spec and development dependencies
+  ([`854132b`](https://github.com/daniel-lxs/mcp-perplexity/commit/854132bcfb31280e764571202d9b18007d9af778))
 
 - Bump version to 0.4.1
   ([`eea247d`](https://github.com/daniel-lxs/mcp-perplexity/commit/eea247db17bf9d1d2576c705e3fe3ffd1f7e7842))
 
 - Bump version to 0.4.1 in pyproject.toml
   ([`7a15333`](https://github.com/daniel-lxs/mcp-perplexity/commit/7a15333842d5b2bd92f796642f1de384f1fe8f3a))
+
+- Bump version to 0.5.0
+  ([`2752793`](https://github.com/daniel-lxs/mcp-perplexity/commit/2752793e43d590c461243d08c0bc194ce4081751))
 
 - Consolidate PyPI publish workflow into release workflow
   ([`989afdf`](https://github.com/daniel-lxs/mcp-perplexity/commit/989afdf8550524102496438bbe25b8b666e7b9b5))
@@ -45,6 +75,15 @@ Extend timeout duration to allow for longer-running API requests in the server m
 
 - Fix ci missing hatch
   ([`259bb18`](https://github.com/daniel-lxs/mcp-perplexity/commit/259bb182da9aeb519dc28bc88751c9e2f6a5d469))
+
+- Increase default timeout for Perplexity API client
+  ([`724aae0`](https://github.com/daniel-lxs/mcp-perplexity/commit/724aae0f936b449a37a21e4abed0aea71c953380))
+
+- Extend default timeout from 60 to 120 seconds to accommodate longer-running queries - Improve API
+  request resilience by allowing more time for complex responses
+
+- Migrate from Hatch to setuptools for project build system
+  ([`c73bb7a`](https://github.com/daniel-lxs/mcp-perplexity/commit/c73bb7a4b1c5018f862996bf6c62ec0c1ef334f9))
 
 - Migrate from hatchling to setuptools build system
   ([`b2e507b`](https://github.com/daniel-lxs/mcp-perplexity/commit/b2e507b02fdc45ac854b86170735923f71af8cfd))
@@ -68,13 +107,154 @@ Extend timeout duration to allow for longer-running API requests in the server m
   Configure commit parser to use Angular standard - Adjust changelog sections and visibility -
   Enable more precise version tagging
 
+### Code Style
+
+- Enhance interactive <think> block styling and rendering
+  ([`dd2ccfa`](https://github.com/daniel-lxs/mcp-perplexity/commit/dd2ccfa484f955f86783c734195080a106c16509))
+
+- Add detailed CSS styling for <think> details and summary elements - Wrap processed content in a
+  dedicated div for better styling control - Implement hover and open state transitions for think
+  blocks - Add subtle animations and color variations for improved user experience
+
 ### Documentation
 
 - Add comprehensive CONTRIBUTING.md and update README.md
   ([`8698330`](https://github.com/daniel-lxs/mcp-perplexity/commit/8698330c915fb5cf8a098d843f70bcd5017f2a4c))
 
+- Add screenshots of webui to the readme file
+  ([`441832c`](https://github.com/daniel-lxs/mcp-perplexity/commit/441832c89e32e0e08990534f0a692a5df54fc8a3))
+
+- Revamp README with comprehensive environment variables and web UI documentation
+  ([`19f9fb8`](https://github.com/daniel-lxs/mcp-perplexity/commit/19f9fb8ca33361f51c76e105aecef208f1ff9e16))
+
+- Update README with detailed environment variable configuration table - Add web UI section with
+  features, screenshots, and access instructions - Remove installation scripts and Cursor-specific
+  setup details - Streamline documentation for better readability and clarity
+
 - Update README.md
   ([`d00badb`](https://github.com/daniel-lxs/mcp-perplexity/commit/d00badba16dd33a5c110c37b5b3255831db5d9ac))
+
+### Features
+
+- Add chat deletion functionality and debug logging control
+  ([`031a826`](https://github.com/daniel-lxs/mcp-perplexity/commit/031a82621014a9290ed0b7185ab1ac91e86550e8))
+
+- Implement chat deletion across database, web routes, and frontend - Add environment-based logging
+  configuration with DEBUG_LOGS support - Create reusable dialog component for confirmation and
+  error messages - Enhance session management in database operations - Improve logging flexibility
+  with conditional log level and file handling
+
+- Add Markdown rendering support for chat messages
+  ([`249e807`](https://github.com/daniel-lxs/mcp-perplexity/commit/249e807d5796cb7bec8009d7cd73e5f3188eea67))
+
+- Add markdown2 dependency to pyproject.toml - Implement Markdown filter in Jinja2 environment -
+  Update message list template to render Markdown content - Configure Tailwind Typography plugin for
+  styled Markdown rendering - Support code blocks, tables, and improved text formatting
+
+- Add port availability check and prevent multiple web UI instances
+  ([`ac4c668`](https://github.com/daniel-lxs/mcp-perplexity/commit/ac4c66853d3ff0bf34122f59c28735412342c0fa))
+
+- Implement `is_port_in_use()` function to check port availability - Add global flag
+  `web_ui_running` to prevent multiple web UI launches - Enhance `run_web_ui()` with safety checks
+  and state management - Ensure graceful handling of web UI startup and shutdown
+
+- Add web interface for chat history management
+  ([`a20fdb5`](https://github.com/daniel-lxs/mcp-perplexity/commit/a20fdb5494db3bec0050590f1bc3c2b53db23ef4))
+
+- Implement web UI with Quart and SQLAlchemy for browsing chat history - Add routes for listing
+  chats, viewing individual chat messages - Create responsive templates with HTMX for dynamic
+  updates - Integrate database management for chat and message storage - Configure environment
+  variables for web UI control - Add logging and error handling for web components
+
+- Enhance logging configuration with environment-based control
+  ([`15b88f9`](https://github.com/daniel-lxs/mcp-perplexity/commit/15b88f908366d39e2749d7911608e4ce2838bc36))
+
+- Add conditional logging setup for Hypercorn based on DEBUG_LOGS environment variable - Modify log
+  directory creation to only occur when debug logs are enabled - Improve logging flexibility by
+  dynamically configuring log handlers and levels - Reduce default logging noise by disabling
+  stdout/stderr logging
+
+- Enhance markdown processing with interactive <think> block rendering
+  ([`a9d05fd`](https://github.com/daniel-lxs/mcp-perplexity/commit/a9d05fdebabd9d5f7117777b65badbcc66805fab))
+
+- Implement custom markdown filter to preserve and transform <think> tags - Add collapsible details
+  element for thought process blocks - Improve message update mechanism with intelligent content
+  comparison - Update base template styling for better details and summary rendering
+
+- Enhance message storage with source citations
+  ([`d19c71e`](https://github.com/daniel-lxs/mcp-perplexity/commit/d19c71e76b851fe0ad5476f2983c6b3b19c7d107))
+
+- Include source citations in assistant responses when storing messages - Format response text to
+  display sources alongside the main content - Modify message storage to preserve full response with
+  source information
+
+- Enhance Perplexity API client with model-specific configurations
+  ([`78766b9`](https://github.com/daniel-lxs/mcp-perplexity/commit/78766b96f111261b2ca0dca44513fc530da51997))
+
+- Add MODEL_PROFILES dictionary to define model-specific settings - Implement dynamic model
+  configuration with temperature, top_p, and system message handling - Add fallback model selection
+  for ask and chat methods - Increase default timeout to 60 seconds - Improve model parameter
+  validation and flexibility
+
+- Implement Perplexity API client and refactor server interactions
+  ([`5c68f45`](https://github.com/daniel-lxs/mcp-perplexity/commit/5c68f455f3e3693bf4dbdda938457e19e9e04636))
+
+- Create `perplexity_client.py` with async streaming client for Perplexity API - Refactor
+  `server.py` to use new `PerplexityClient` for API interactions - Migrate from direct SQLite
+  connections to SQLAlchemy ORM database management - Improve error handling and progress tracking
+  for API requests - Simplify chat and ask methods with centralized client logic
+
+- Implement Tokyo Night dark theme for web interface
+  ([`d8dfe25`](https://github.com/daniel-lxs/mcp-perplexity/commit/d8dfe250d2b6ac67e52e07dd453c2ce3b49c2c65))
+
+- Refactor HTML templates with dark mode color scheme - Add CSS variables for Tokyo Night theme
+  colors - Update Tailwind configuration to support dark mode - Enhance UI with smooth color
+  transitions - Improve readability and visual consistency across pages
+
+- Improve web application resource path handling and logging
+  ([`35be31b`](https://github.com/daniel-lxs/mcp-perplexity/commit/35be31b11323a8858720dc8d71e879f37ddc76e0))
+
+### Refactoring
+
+- Improve message rendering and typography in web templates
+  ([`abe031c`](https://github.com/daniel-lxs/mcp-perplexity/commit/abe031c2654689e1c51f43483c5991739e4700dc))
+
+- Enhance message list template with better text wrapping and overflow handling - Add Tailwind CSS
+  classes for improved responsiveness and readability - Update base template with more robust
+  typography and code block styling - Optimize message container width and break-word behavior
+
+- Improve UI layout and spacing in chat list and base templates
+  ([`3461ecf`](https://github.com/daniel-lxs/mcp-perplexity/commit/3461ecf7a956defd530191d316959c56b2f5cb87))
+
+- Adjust padding and margin in chat list items for better visual balance - Update base template with
+  flexbox layout for full-height page - Enhance responsive design with container and spacing
+  adjustments - Refine typography and alignment in headers and list items
+
+- Optimize web UI styling and layout
+  ([`8b2fcae`](https://github.com/daniel-lxs/mcp-perplexity/commit/8b2fcae212c574a5676539c26aa118202e5d5f32))
+
+- Reduce message margins for better space utilization - Improve code and pre-block styling with
+  enhanced readability - Add scrollable overflow for code blocks and messages - Adjust typography
+  and spacing in headers, navigation, and footer - Implement subtle hover and interaction styles for
+  code and think blocks
+
+- Streamline release workflow and build process
+  ([`4fd2ca8`](https://github.com/daniel-lxs/mcp-perplexity/commit/4fd2ca86a9b37b5bbeaf1ee1644513d9f6f72d77))
+
+- Update release workflow to use latest semantic-release version - Add multi-platform binary builds
+  with PyInstaller - Implement automated artifact generation and checksum verification - Remove
+  separate PyPI publish workflow in favor of integrated process - Enhance release asset upload and
+  GitHub release management
+
+- Update error page styling with Tokyo Night theme colors
+  ([`fd0514a`](https://github.com/daniel-lxs/mcp-perplexity/commit/fd0514ab6e58bf38437c1de498625920be691456))
+
+- Update web UI environment variables and configuration
+  ([`410d0b9`](https://github.com/daniel-lxs/mcp-perplexity/commit/410d0b981ed5b5563d5bc878722384e902296d50))
+
+- Rename web-related environment variables from `MCP_*` to `WEB_UI_*` - Update README documentation
+  to reflect new environment variable names - Modify web module to use new environment variable
+  names consistently - Maintain default values and functionality of web UI configuration
 
 
 ## v0.4.0 (2025-02-14)
