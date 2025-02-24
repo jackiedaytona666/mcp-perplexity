@@ -6,7 +6,7 @@ from typing import Optional
 import socket
 
 from .server import main as server_main
-from .web import create_app, WEB_ENABLED, WEB_PORT, WEB_HOST
+from .web import create_app, WEB_UI_ENABLED, WEB_UI_PORT, WEB_UI_HOST
 
 __version__ = "0.5.0"
 
@@ -38,7 +38,7 @@ async def run_web_ui():
             from hypercorn.config import Config
 
             config = Config()
-            config.bind = [f"{WEB_HOST}:{WEB_PORT}"]
+            config.bind = [f"{WEB_UI_HOST}:{WEB_UI_PORT}"]
 
             # Only configure logging if DEBUG_LOGS is enabled
             if os.getenv('DEBUG_LOGS', 'false').lower() == 'true':
@@ -82,7 +82,7 @@ async def run_server(args: Optional[list] = None):
     tasks = []
 
     # Add web UI task if enabled
-    if WEB_ENABLED:
+    if WEB_UI_ENABLED:
         tasks.append(run_web_ui())
 
     # Add MCP server task - this is the only one that should use stdio

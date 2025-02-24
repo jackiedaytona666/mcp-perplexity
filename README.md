@@ -71,9 +71,9 @@ Configure the MCP Perplexity server using the following environment variables:
 | `PERPLEXITY_MODEL_ASK` | Specific model for `ask_perplexity` tool | Uses `PERPLEXITY_MODEL` | No |
 | `PERPLEXITY_MODEL_CHAT` | Specific model for `chat_perplexity` tool | Uses `PERPLEXITY_MODEL` | No |
 | `DB_PATH` | Path to store chat history database | `chats.db` | No |
-| `MCP_WEB_ENABLED` | Enable or disable web UI | `false` | No |
-| `MCP_WEB_PORT` | Port for web UI | `8050` | No |
-| `MCP_WEB_HOST` | Host for web UI | `127.0.0.1` | No |
+| `WEB_UI_ENABLED` | Enable or disable web UI | `false` | No |
+| `WEB_UI_PORT` | Port for web UI | `8050` | No |
+| `WEB_UI_HOST` | Host for web UI | `127.0.0.1` | No |
 | `DEBUG_LOGS` | Enable detailed logging | `false` | No |
 
 ## Available Tools
@@ -118,7 +118,7 @@ The MCP Perplexity server now includes a web interface for easier interaction an
 
 ### Accessing the Web UI
 
-When `MCP_WEB_ENABLED` is set to `true`, the web UI will be available at `http://MCP_WEB_HOST:MCP_WEB_PORT`. 
+When `WEB_UI_ENABLED` is set to `true`, the web UI will be available at `http://WEB_UI_HOST:WEB_UI_PORT`. 
 
 By default, this is `http://127.0.0.1:8050`.
 

@@ -41,9 +41,9 @@ template_logger.propagate = False
 logger.propagate = False
 
 # Environment variables
-WEB_ENABLED = os.getenv('MCP_WEB_ENABLED', 'false').lower() == 'true'
-WEB_PORT = int(os.getenv('MCP_WEB_PORT', '8050'))
-WEB_HOST = os.getenv('MCP_WEB_HOST', '127.0.0.1')
+WEB_UI_ENABLED = os.getenv('WEB_UI_ENABLED', 'false').lower() == 'true'
+WEB_UI_PORT = int(os.getenv('WEB_UI_PORT', '8050'))
+WEB_UI_HOST = os.getenv('WEB_UI_HOST', '127.0.0.1')
 
 
 def get_resource_path(relative_path):
@@ -66,7 +66,7 @@ def get_resource_path(relative_path):
 
 
 def create_app():
-    if not WEB_ENABLED:
+    if not WEB_UI_ENABLED:
         logger.info("Web UI is disabled via environment variables")
         return None
 
@@ -87,7 +87,7 @@ def create_app():
         register_routes(app)
 
         logger.info(
-            f"Web UI initialized successfully on {WEB_HOST}:{WEB_PORT}")
+            f"Web UI initialized successfully on {WEB_UI_HOST}:{WEB_UI_PORT}")
         return app
     except Exception as e:
         logger.error(f"Failed to initialize web UI: {e}")
