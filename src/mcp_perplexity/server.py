@@ -208,7 +208,18 @@ def get_chat_history(chat_id: str) -> List[Dict[str, str]]:
         ).order_by(Message.timestamp.asc()).all()
         
         # Access attributes within the session context
-        return [{"role": msg.role, "content": msg.content} for msg in messages]
+        result = []
+        for msg in messages:
+            content = msg.content
+            # For assistant messages, we need to keep the content as is
+            result.append({"role": msg.role, "content": content})
+        
+        # Add system message at the beginning if not present
+        has_system = any(msg["role"] == "system" for msg in result)
+        if not has_system:
+            result.insert(0, {"role": "system", "content": SYSTEM_PROMPT})
+            
+        return result
 
 
 def get_relative_time(timestamp: datetime) -> str:
@@ -306,11 +317,13 @@ async def handle_call_tool(
                         total=total_estimate,
                     )
 
-            # Format citations with numbered list starting from 1
-            unique_citations = citations  # Keep all citations including duplicates
             citation_list = "\n".join(
-                f"{i}. {url}" for i, url in enumerate(unique_citations, start=1))
-
+                f"{i}. {url}" for i, url in enumerate(citations, start=1))
+            
+            # Handle empty citations
+            if not citation_list:
+                citation_list = "No sources available for this response."
+                
             # Format the response text for display
             response_text = (
                 f"{full_response}\n\n"
@@ -401,10 +414,12 @@ async def handle_call_tool(
                         total=total_estimate,
                     )
 
-            # Format citations with numbered list starting from 1
-            unique_citations = citations  # Keep all citations including duplicates
             citation_list = "\n".join(
-                f"{i}. {url}" for i, url in enumerate(unique_citations, start=1))
+                f"{i}. {url}" for i, url in enumerate(citations, start=1))
+            
+            # Handle empty citations
+            if not citation_list:
+                citation_list = "No sources available for this response."
 
             # Format full response with sources for storage
             response_with_sources = (
@@ -475,8 +490,8 @@ async def handle_call_tool(
             chat_list = []
             for chat in chats:
                 message_count = len(chat.messages)
-                relative_time = get_relative_time(chat.created_at.scalar())
-                title = chat.title.scalar() if chat.title is not None else 'Untitled'
+                relative_time = get_relative_time(chat.created_at)
+                title = chat.title if chat.title is not None else 'Untitled'
                 chat_list.append(
                     f"Chat ID: {chat.id}\n"
                     f"Title: {title}\n"
@@ -491,27 +506,30 @@ async def handle_call_tool(
     elif name == "read_chat_perplexity":
         chat_id = arguments["chat_id"]
 
-        chat = db_manager.get_chat(chat_id)
-        if not chat:
-            raise ValueError(f"Chat with ID {chat_id} not found")
+        with db_manager.get_session() as session:
+            chat = session.query(Chat).filter(Chat.id == chat_id).first()
+            if not chat:
+                raise ValueError(f"Chat with ID {chat_id} not found")
 
-        messages = db_manager.get_chat_messages(chat_id)
+            messages = session.query(Message).filter(
+                Message.chat_id == chat_id
+            ).order_by(Message.timestamp.asc()).all()
 
-        # Format the response
-        chat_header = (
-            f"Chat ID: {chat.id}\n"
-            f"Title: {chat.title.scalar() if chat.title is not None else 'Untitled'}\n"
-            f"Created: {chat.created_at.scalar()}\n"
-            f"Messages: {len(messages)}\n\n"
-            f"{'=' * 40}\n\n"
-        )
-
-        message_history = []
-        for message in messages:
-            role_display = "You" if message.role.scalar() == "user" else "Assistant"
-            message_history.append(
-                f"[{message.timestamp.scalar()}] {role_display}:\n{message.content.scalar()}\n"
+            # Format the response
+            chat_header = (
+                f"Chat ID: {chat.id}\n"
+                f"Title: {chat.title if chat.title is not None else 'Untitled'}\n"
+                f"Created: {chat.created_at}\n"
+                f"Messages: {len(messages)}\n\n"
+                f"{'=' * 40}\n\n"
             )
+
+            message_history = []
+            for message in messages:
+                role_display = "You" if message.role == "user" else "Assistant"
+                message_history.append(
+                    f"[{message.timestamp}] {role_display}:\n{message.content}\n"
+                )
 
         response_text = chat_header + "\n".join(message_history)
 
