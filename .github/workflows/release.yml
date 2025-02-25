@@ -211,7 +211,7 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          artifacts/mcp-perplexity-*
+          artifacts/*/mcp-perplexity-*
           artifacts/*.sha256
         tag_name: v${{ needs.release.outputs.version }}
 
