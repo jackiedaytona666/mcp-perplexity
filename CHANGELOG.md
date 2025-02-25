@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.5.1 (2025-02-25)
+
+
+
+### 🧹 Maintenance
+
+
+* Version bump ([`3f659f0`](https://github.com/daniel-lxs/mcp-perplexity/commit/3f659f08e23c0e91f3630c2bb6fdc2e7c3d31ed9))
+
+
+
+
+### 🐛 Bug Fixes
+
+
+* Improve database query and message handling in perplexity server ([`b4961f8`](https://github.com/daniel-lxs/mcp-perplexity/commit/b4961f85ca9ccee399d6cbcd9773c7a0f3583e9b))
+
+* Refactor perplexity client message handling ([`b7664ea`](https://github.com/daniel-lxs/mcp-perplexity/commit/b7664ea9d47d0eacd52c8e904807bc06b31539a1))
+
+
+
+
+
+
+
 ## v0.5.0 (2025-02-25)
 
 
