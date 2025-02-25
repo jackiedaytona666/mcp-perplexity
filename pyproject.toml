@@ -1,6 +1,6 @@
 [project]
 name = "mcp-perplexity"
-version = "0.5.2"
+version = "0.6.0"
 description = "MCP Server for the Perplexity API."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -42,64 +42,22 @@ build_command = "python -m build"
 commit_parser = "angular"
 major_on_zero = false
 tag_format = "v{version}"
-# Explicitly disable templates
-templates_dir = ""
+# Use custom templates
+templates_dir = "templates"
 
 # Changelog configuration with proper section titles
 [tool.semantic_release.changelog]
 changelog_file = "CHANGELOG.md"
-changelogTitle = "# Changelog"
+template_dir = "templates"
+# Define mode for changelog generation
+mode = "init"
 
-# Define sections for changelog
-[[tool.semantic_release.changelog.sections]]
-type = "feat"
-section = "Features"
-hidden = false
+[tool.semantic_release.remote]
+type = "github"
+token = { env = "GH_TOKEN" }
 
-[[tool.semantic_release.changelog.sections]]
-type = "fix"
-section = "Bug Fixes"
-hidden = false
-
-[[tool.semantic_release.changelog.sections]]
-type = "perf"
-section = "Performance Improvements"
-hidden = false
-
-[[tool.semantic_release.changelog.sections]]
-type = "docs"
-section = "Documentation"
-hidden = false
-
-[[tool.semantic_release.changelog.sections]]
-type = "style"
-section = "Code Style"
-hidden = false
-
-[[tool.semantic_release.changelog.sections]]
-type = "refactor"
-section = "Code Refactoring"
-hidden = false
-
-[[tool.semantic_release.changelog.sections]]
-type = "test"
-section = "Tests"
-hidden = false
-
-[[tool.semantic_release.changelog.sections]]
-type = "build"
-section = "Build System"
-hidden = false
-
-[[tool.semantic_release.changelog.sections]]
-type = "ci"
-section = "Continuous Integration"
-hidden = false
-
-[[tool.semantic_release.changelog.sections]]
-type = "chore"
-section = "Maintenance"
-hidden = false
+[tool.semantic_release.remote.github]
+release_notes = true
 
 [tool.setuptools]
 include-package-data = true

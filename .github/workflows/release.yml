@@ -44,6 +44,7 @@ jobs:
         git config --global user.name "github-actions"
         git config --global user.email "action@github.com"
         semantic-release version
+        # Publish to GitHub with release notes
         semantic-release publish
 
     - name: Store the distribution packages
@@ -195,6 +196,10 @@ jobs:
     permissions:
       contents: write
     steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: v${{ needs.release.outputs.version }}
+        
     - name: Download all artifacts
       uses: actions/download-artifact@v4
       with:
