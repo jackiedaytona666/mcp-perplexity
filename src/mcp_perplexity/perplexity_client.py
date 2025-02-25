@@ -34,22 +34,18 @@ MODEL_PROFILES = {
     "sonar": {
         "temperature": 0.2,
         "top_p": 0.9,
-        "convert_system_to_user": False,
     },
     "sonar-pro": {
         "temperature": 0.2,
         "top_p": 0.9,
-        "convert_system_to_user": False,
     },
     "sonar-reasoning": {
         "temperature": 0.6,
         "top_p": 0.95,
-        "convert_system_to_user": True,
     },
     "sonar-reasoning-pro": {
         "temperature": 0.6,
         "top_p": 0.95,
-        "convert_system_to_user": True,
     },
 }
 
@@ -85,17 +81,6 @@ class PerplexityClient:
         }
 
         if profile:
-            # Handle system messages consistently
-            if profile.get("convert_system_to_user", False):
-                new_messages = []
-                for message in messages:
-                    if message["role"] == "system":
-                        new_messages.append(
-                            {"role": "user", "content": message["content"]})
-                    else:
-                        new_messages.append(message)
-                request_body["messages"] = new_messages
-
             # Apply validated profile settings
             for setting in ["temperature", "top_p"]:
                 if setting in profile:
@@ -125,7 +110,8 @@ class PerplexityClient:
                             if "usage" in data:
                                 usage.update(data["usage"])
                             if "citations" in data:
-                                citations.extend(data["citations"])
+                                # Clear existing citations and use the complete list
+                                citations = data["citations"]
                             if data.get("choices"):
                                 content = data["choices"][0].get(
                                     "delta", {}).get("content", "")
