@@ -48,8 +48,7 @@ templates_dir = ""
 # Changelog configuration with proper section titles
 [tool.semantic_release.changelog]
 changelog_file = "CHANGELOG.md"
-# Disable template for changelog
-template = ""
+changelogTitle = "# Changelog"
 
 # Define sections for changelog
 [[tool.semantic_release.changelog.sections]]
@@ -101,3 +100,9 @@ hidden = false
 type = "chore"
 section = "Maintenance"
 hidden = false
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"mcp_perplexity.web" = ["templates/*.html"]

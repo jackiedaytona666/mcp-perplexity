@@ -2,6 +2,7 @@ import os
 import logging
 import sys
 from pathlib import Path
+import importlib.resources
 from quart import Quart
 from markdown2 import markdown
 from ..database import DatabaseManager
@@ -53,13 +54,49 @@ def get_resource_path(relative_path):
         base_path = sys._MEIPASS
         template_logger.info(f"Running in PyInstaller environment. MEIPASS: {base_path}")
     except Exception:
-        base_path = os.path.abspath(".")
-        template_logger.info(f"Running in development environment. Base path: {base_path}")
+        # Try to find the package using importlib.resources (Python 3.9+)
+        try:
+            # Get the root package name from relative_path (e.g., "mcp_perplexity" from "mcp_perplexity/web/templates")
+            root_package = relative_path.split('/')[0]
+            
+            # Try to find the package root using importlib
+            template_logger.info(f"Trying to find package path for {root_package}")
+            package_path = importlib.resources.files(root_package)
+            if package_path:
+                # If package found, use its path and append the remaining parts of relative_path
+                relative_parts = relative_path.split('/')
+                base_path = package_path.parent
+                template_logger.info(f"Found package path: {base_path}")
+            else:
+                # Fall back to current directory if package not found
+                base_path = os.path.abspath(".")
+                template_logger.info(f"Package path not found. Using current directory: {base_path}")
+        except (ImportError, ModuleNotFoundError, ValueError):
+            # If importlib.resources approach fails, fall back to current directory
+            base_path = os.path.abspath(".")
+            template_logger.info(f"Running in development environment. Base path: {base_path}")
     
+    # Try multiple possible locations for the templates
+    paths_to_try = [
+        os.path.join(base_path, relative_path),
+        os.path.join(base_path, "src", relative_path),
+        os.path.join(base_path, relative_path.split('/', 1)[1] if '/' in relative_path else relative_path)
+    ]
+    
+    # Log all paths we're trying
+    for i, path in enumerate(paths_to_try):
+        template_logger.info(f"Trying path {i+1}: {path}")
+        if os.path.exists(path):
+            template_logger.info(f"Path exists: {path}")
+            if os.path.isdir(path):
+                template_logger.info(f"Directory contents: {os.listdir(path)}")
+            return path
+    
+    # If none of the paths worked, return the original path calculation
     full_path = os.path.join(base_path, relative_path)
-    template_logger.info(f"Full resource path for {relative_path}: {full_path}")
+    template_logger.info(f"No alternative paths found. Using original path: {full_path}")
     template_logger.info(f"Path exists: {os.path.exists(full_path)}")
-    if os.path.exists(full_path):
+    if os.path.exists(full_path) and os.path.isdir(full_path):
         template_logger.info(f"Directory contents: {os.listdir(full_path)}")
     
     return full_path
