@@ -1,6 +1,6 @@
 [project]
 name = "mcp-perplexity"
-version = "0.6.0"
+version = "0.5.7"
 description = "MCP Server for the Perplexity API."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -29,9 +29,6 @@ mcp-perplexity = "mcp_perplexity:main"
 [build-system]
 requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
-
-[project.optional-dependencies]
-dev = ["pyinstaller>=6.3.0"]
 
 [tool.semantic_release]
 version_variable = ["src/mcp_perplexity/__init__.py:__version__"]

@@ -6,6 +6,7 @@ from datetime import datetime
 import uuid
 from typing import List, Dict, Optional
 import sqlite3
+from pathlib import Path
 
 import mcp.server.stdio
 import mcp.types as types
@@ -15,9 +16,17 @@ from haikunator import Haikunator
 
 from .perplexity_client import PerplexityClient
 from .database import DatabaseManager, Chat, Message
+from .utils import get_logs_dir
 
 haikunator = Haikunator()
-DB_PATH = os.getenv("DB_PATH", "chats.db")
+
+# Get default DB path in user's home directory
+def get_default_db_path():
+    data_dir = Path.home() / ".mcp-perplexity" / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    return str(data_dir / "chats.db")
+
+DB_PATH = os.getenv("DB_PATH", get_default_db_path())
 SYSTEM_PROMPT = """You are an expert assistant providing accurate answers to technical questions.
 Your responses must:
 1. Be based on the most relevant web sources
@@ -193,8 +202,13 @@ def store_message(chat_id: str, role: str, content: str, title: Optional[str] = 
 
 
 def get_chat_history(chat_id: str) -> List[Dict[str, str]]:
-    messages = db_manager.get_chat_messages(chat_id)
-    return [{"role": msg.role.scalar(), "content": msg.content.scalar()} for msg in messages]
+    with db_manager.get_session() as session:
+        messages = session.query(Message).filter(
+            Message.chat_id == chat_id
+        ).order_by(Message.timestamp.asc()).all()
+        
+        # Access attributes within the session context
+        return [{"role": msg.role, "content": msg.content} for msg in messages]
 
 
 def get_relative_time(timestamp: datetime) -> str:

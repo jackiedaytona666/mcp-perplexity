@@ -1,42 +1,45 @@
 import os
 import logging
-import sys
 from pathlib import Path
-import importlib.resources
 from quart import Quart
 from markdown2 import markdown
 from ..database import DatabaseManager
 from .database_extension import db
+from .. import get_logs_dir
 
 # Setup logging
 logger = logging.getLogger(__name__)
 
-# Ensure logs directory exists
-os.makedirs('logs', exist_ok=True)
-
-# File handler for web operations
-web_handler = logging.FileHandler('logs/web.log')
-web_handler.setFormatter(logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-logger.addHandler(web_handler)
-
-# File handler for template debugging
-template_handler = logging.FileHandler('logs/templates.log')
-template_handler.setFormatter(logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-
-# Set log level based on DEBUG_LOGS
+# Only create logs directory and set up file handlers if DEBUG_LOGS is enabled
 if os.getenv('DEBUG_LOGS', 'false').lower() == 'true':
+    # Ensure logs directory exists
+    logs_dir = get_logs_dir()
+    logs_dir.mkdir(parents=True, exist_ok=True)
+
+    # File handler for web operations
+    web_handler = logging.FileHandler(str(logs_dir / "web.log"))
+    web_handler.setFormatter(logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    logger.addHandler(web_handler)
+
+    # File handler for template debugging
+    template_handler = logging.FileHandler(str(logs_dir / "templates.log"))
+    template_handler.setFormatter(logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    
+    # Set log level for debug mode
     logger.setLevel(logging.INFO)
     template_handler.setLevel(logging.INFO)
+    
+    # Add template handler to the template logger
+    template_logger = logging.getLogger('template_debug')
+    template_logger.addHandler(template_handler)
+    template_logger.propagate = False
 else:
+    # Set critical log level when debug logs are disabled
     logger.setLevel(logging.CRITICAL)
-    template_handler.setLevel(logging.CRITICAL)
-
-# Add template handler to the template logger
-template_logger = logging.getLogger('template_debug')
-template_logger.addHandler(template_handler)
-template_logger.propagate = False
+    template_logger = logging.getLogger('template_debug')
+    template_logger.setLevel(logging.CRITICAL)
 
 # Disable propagation to prevent stdout logging
 logger.propagate = False
@@ -47,70 +50,17 @@ WEB_UI_PORT = int(os.getenv('WEB_UI_PORT', '8050'))
 WEB_UI_HOST = os.getenv('WEB_UI_HOST', '127.0.0.1')
 
 
-def get_resource_path(relative_path):
-    """Get absolute path to resource, works for dev and for PyInstaller"""
-    try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = sys._MEIPASS
-        template_logger.info(f"Running in PyInstaller environment. MEIPASS: {base_path}")
-    except Exception:
-        # Try to find the package using importlib.resources (Python 3.9+)
-        try:
-            # Get the root package name from relative_path (e.g., "mcp_perplexity" from "mcp_perplexity/web/templates")
-            root_package = relative_path.split('/')[0]
-            
-            # Try to find the package root using importlib
-            template_logger.info(f"Trying to find package path for {root_package}")
-            package_path = importlib.resources.files(root_package)
-            if package_path:
-                # If package found, use its path and append the remaining parts of relative_path
-                relative_parts = relative_path.split('/')
-                base_path = package_path.parent
-                template_logger.info(f"Found package path: {base_path}")
-            else:
-                # Fall back to current directory if package not found
-                base_path = os.path.abspath(".")
-                template_logger.info(f"Package path not found. Using current directory: {base_path}")
-        except (ImportError, ModuleNotFoundError, ValueError):
-            # If importlib.resources approach fails, fall back to current directory
-            base_path = os.path.abspath(".")
-            template_logger.info(f"Running in development environment. Base path: {base_path}")
-    
-    # Try multiple possible locations for the templates
-    paths_to_try = [
-        os.path.join(base_path, relative_path),
-        os.path.join(base_path, "src", relative_path),
-        os.path.join(base_path, relative_path.split('/', 1)[1] if '/' in relative_path else relative_path)
-    ]
-    
-    # Log all paths we're trying
-    for i, path in enumerate(paths_to_try):
-        template_logger.info(f"Trying path {i+1}: {path}")
-        if os.path.exists(path):
-            template_logger.info(f"Path exists: {path}")
-            if os.path.isdir(path):
-                template_logger.info(f"Directory contents: {os.listdir(path)}")
-            return path
-    
-    # If none of the paths worked, return the original path calculation
-    full_path = os.path.join(base_path, relative_path)
-    template_logger.info(f"No alternative paths found. Using original path: {full_path}")
-    template_logger.info(f"Path exists: {os.path.exists(full_path)}")
-    if os.path.exists(full_path) and os.path.isdir(full_path):
-        template_logger.info(f"Directory contents: {os.listdir(full_path)}")
-    
-    return full_path
-
-
 def create_app():
     if not WEB_UI_ENABLED:
         logger.info("Web UI is disabled via environment variables")
         return None
 
     try:
-        # Initialize Quart with template folder path
-        template_path = get_resource_path('mcp_perplexity/web/templates')
-        app = Quart(__name__, template_folder=template_path)
+        app = Quart(__name__)
+
+        # Configure template and static directories
+        app.template_folder = str(Path(__file__).parent / 'templates')
+        app.static_folder = str(Path(__file__).parent / 'static')
 
         # Add markdown filter
         def custom_markdown_filter(text):

@@ -3,10 +3,13 @@ from datetime import datetime
 from contextlib import contextmanager
 import logging
 from typing import Optional, List, TypeVar, Type, Callable
+from pathlib import Path
 
 from sqlalchemy import create_engine, Column, String, DateTime, ForeignKey
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship, Session
 from sqlalchemy.pool import QueuePool
+
+from .utils import get_logs_dir
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -16,10 +19,11 @@ if os.getenv('DEBUG_LOGS', 'false').lower() == 'true':
     logger.setLevel(logging.INFO)
 
     # Ensure logs directory exists
-    os.makedirs('logs', exist_ok=True)
+    logs_dir = get_logs_dir()
+    logs_dir.mkdir(parents=True, exist_ok=True)
 
     # File handler for database operations
-    db_handler = logging.FileHandler('logs/database.log')
+    db_handler = logging.FileHandler(str(logs_dir / "database.log"))
     db_handler.setFormatter(logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
     logger.addHandler(db_handler)
