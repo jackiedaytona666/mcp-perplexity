@@ -1,0 +1,16 @@
+# Cline/VS Code MCP Server Configuration
+# Add this to your VS Code settings.json or Cline configuration
+
+{
+  "mcp.servers": {
+    "mcp-perplexity": {
+      "command": "uvx",
+      "args": ["mcp-perplexity"],
+      "env": {
+        "PERPLEXITY_API_KEY": "pplx-your-api-key-here",
+        "PERPLEXITY_MODEL": "sonar-pro",
+        "DB_PATH": "chats.db"
+      }
+    }
+  }
+}

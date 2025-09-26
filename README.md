@@ -39,8 +39,11 @@ Before using this MCP server, ensure you have:
 
 - Python 3.10 or higher
 - [uvx](https://docs.astral.sh/uv/#installation) package manager installed
+- A Perplexity Pro account with an API key
 
 Note: Installation instructions for uvx are available [here](https://docs.astral.sh/uv/#installation).
+
+📘 **For detailed API key setup instructions, see [API_KEY_SETUP.md](API_KEY_SETUP.md)**
 
 ### Configuration for All Clients
 
@@ -59,6 +62,22 @@ To use this MCP server, configure your client with these settings (configuration
   }
 }
 ```
+
+### Quick Setup
+
+1. **Get your Perplexity API key** from [perplexity.ai](https://www.perplexity.ai/settings/api)
+2. **Use the setup script** (recommended):
+   ```bash
+   git clone https://github.com/jackiedaytona666/mcp-perplexity.git
+   cd mcp-perplexity
+   ./setup.sh
+   ```
+3. **Edit .env file** and add your API key:
+   ```bash
+   PERPLEXITY_API_KEY=pplx-your-api-key-here
+   ```
+
+See [API_KEY_SETUP.md](API_KEY_SETUP.md) for comprehensive setup instructions and [examples/](examples/) for configuration templates.
 
 ## Environment Variables
 

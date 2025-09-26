@@ -1,0 +1,19 @@
+# Docker Compose example for MCP Perplexity
+version: '3.8'
+
+services:
+  mcp-perplexity:
+    image: mcp-perplexity
+    environment:
+      - PERPLEXITY_API_KEY=pplx-your-api-key-here
+      - PERPLEXITY_MODEL=sonar-pro
+      - DB_PATH=/app/data/chats.db
+      - WEB_UI_ENABLED=true
+      - WEB_UI_PORT=8050
+      - WEB_UI_HOST=0.0.0.0
+      - DEBUG_LOGS=false
+    ports:
+      - "8050:8050"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
