@@ -9,8 +9,26 @@ wheels/
 # Virtual environments
 .venv
 
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.key
+secrets.json
+
+# Database files
+chats.db
+chats.db-*
+
 # Editor Config
 .vscode/*
 !.vscode/launch.json
 !.vscode/tasks.json
 !.vscode/extensions.json
+
+# IDEs
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db

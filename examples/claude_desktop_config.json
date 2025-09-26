@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "mcp-perplexity": {
+      "command": "uvx",
+      "args": ["mcp-perplexity"],
+      "env": {
+        "PERPLEXITY_API_KEY": "pplx-your-api-key-here",
+        "PERPLEXITY_MODEL": "sonar-pro",
+        "DB_PATH": "chats.db",
+        "WEB_UI_ENABLED": "false",
+        "DEBUG_LOGS": "false"
+      }
+    }
+  }
+}
